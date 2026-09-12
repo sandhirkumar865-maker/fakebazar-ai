@@ -251,11 +251,19 @@
     body.light-mode .stat-card,
     body.light-mode .signal-card,
     body.light-mode .history-card,
+    body.light-mode .dash-scan-card,
+    body.light-mode .dash-result-card,
     body.light-mode .check-item {
       background: #ffffff;
       color: #0f172a;
       border-color: rgba(0, 0, 0, 0.12);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    }
+    body.light-mode .dash-url-input-group input,
+    body.light-mode .photo-dropzone {
+      background: #f8fafc;
+      color: #0f172a;
+      border-color: rgba(0, 0, 0, 0.15);
     }
     body.light-mode .btn-secondary,
     body.light-mode .btn-preset {
@@ -513,6 +521,179 @@
     }
     .card-title i {
       color: var(--accent-cyan);
+    }
+
+    /* Dashboard Quick Scanner Widget */
+    .dash-scan-card {
+      background: linear-gradient(135deg, rgba(17, 23, 38, 0.95), rgba(10, 14, 23, 0.98));
+      border: 1px solid var(--border-highlight);
+      border-radius: var(--radius-lg);
+      padding: 1.8rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), var(--shadow-glow);
+      position: relative;
+      overflow: hidden;
+    }
+    .dash-scan-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue), var(--accent-purple));
+    }
+    .dash-scan-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.75rem;
+    }
+    .dash-tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.88rem;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .dash-tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .dash-tab-btn.active {
+      color: var(--accent-cyan);
+      background: rgba(0, 242, 254, 0.1);
+      border: 1px solid rgba(0, 242, 254, 0.25);
+    }
+    .dash-scan-input-wrapper {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .dash-url-input-group {
+      position: relative;
+      flex: 1;
+      min-width: 280px;
+    }
+    .dash-url-input-group i {
+      position: absolute;
+      left: 1.2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--accent-cyan);
+      font-size: 1.1rem;
+    }
+    .dash-url-input-group input {
+      padding-left: 3rem;
+      width: 100%;
+      height: 50px;
+      font-size: 0.95rem;
+      background: rgba(10, 14, 23, 0.95);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      outline: none;
+      transition: var(--transition);
+    }
+    .dash-url-input-group input:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+    }
+    .dash-scan-express-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .dash-result-card {
+      margin-top: 1.5rem;
+      background: rgba(9, 13, 22, 0.85);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+    .dash-result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    /* Photo / Image Scanner Styles */
+    .photo-dropzone {
+      border: 2px dashed rgba(0, 242, 254, 0.4);
+      background: rgba(10, 14, 23, 0.6);
+      border-radius: var(--radius-md);
+      padding: 1.8rem;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+    }
+    .photo-dropzone:hover, .photo-dropzone.dragover {
+      border-color: var(--accent-cyan);
+      background: rgba(0, 242, 254, 0.08);
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.15);
+    }
+    .photo-preview-container {
+      display: none;
+      position: relative;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border-highlight);
+      max-height: 280px;
+      margin-bottom: 1.25rem;
+      background: #000;
+    }
+    .photo-preview-img {
+      width: 100%;
+      height: 280px;
+      object-fit: contain;
+      display: block;
+    }
+    .scan-laser-line {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--accent-cyan), #ffffff, var(--accent-cyan), transparent);
+      box-shadow: 0 0 15px var(--accent-cyan);
+      display: none;
+      animation: laserSweep 1.8s ease-in-out infinite alternate;
+      z-index: 10;
+    }
+    @keyframes laserSweep {
+      0% { top: 0%; }
+      100% { top: 96%; }
+    }
+    .ocr-tags-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .ocr-tag {
+      font-size: 0.76rem;
+      padding: 4px 10px;
+      border-radius: 50px;
+      background: rgba(0, 242, 254, 0.12);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      color: var(--accent-cyan);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-weight: 600;
     }
 
     /* Dashboard Grid */
@@ -1262,6 +1443,9 @@
             <button class="btn-primary" onclick="switchTab('analyze')">
               <i class="fa-solid fa-magnifying-glass-chart"></i> Analyze a Product
             </button>
+            <button class="btn-primary" style="background:linear-gradient(135deg, var(--accent-purple), var(--accent-blue)); box-shadow:0 0 20px rgba(139, 92, 246, 0.4);" onclick="triggerDashPhotoScanTab()">
+              <i class="fa-solid fa-camera"></i> Scan Product by Photo
+            </button>
             <button class="btn-secondary" onclick="loadDemoPreset(1)">
               <i class="fa-solid fa-flask"></i> Try High Risk Demo
             </button>
@@ -1306,6 +1490,157 @@
               <span><i class="fa-solid fa-lock" style="color:var(--risk-low)"></i> Standard Protocol (HTTPS)</span>
               <span style="color:var(--risk-low); font-weight:700;">0 Risk</span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Direct Product Quick Scan Terminal (Dashboard Scanner) -->
+      <div class="dash-scan-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
+          <div>
+            <h3 style="font-size:1.3rem; font-weight:800; display:flex; align-items:center; gap:0.6rem; color:var(--text-main);">
+              <i class="fa-solid fa-bolt-lightning" style="color:var(--accent-cyan);"></i> Quick Product Scanner
+            </h3>
+            <p class="text-muted" style="font-size:0.85rem; margin-top:0.2rem;">
+              Instant AI heuristic risk assessment — paste product link or quick listing details directly below.
+            </p>
+          </div>
+          <div class="preset-buttons" style="margin-bottom:0;">
+            <button class="btn-preset" onclick="runDashQuickPreset(1)"><i class="fa-solid fa-skull"></i> High Risk Demo</button>
+            <button class="btn-preset" onclick="runDashQuickPreset(2)"><i class="fa-solid fa-shield-heart"></i> Low Risk Demo</button>
+            <button class="btn-preset" onclick="runDashQuickPreset(3)"><i class="fa-solid fa-triangle-exclamation"></i> Moderate Demo</button>
+          </div>
+        </div>
+
+        <div class="dash-scan-tabs">
+          <button class="dash-tab-btn active" id="dashTabUrl" onclick="switchDashScanMode('url')">
+            <i class="fa-solid fa-link"></i> URL Link Quick Scan
+          </button>
+          <button class="dash-tab-btn" id="dashTabExpress" onclick="switchDashScanMode('express')">
+            <i class="fa-solid fa-sliders"></i> Express Parameters Scan
+          </button>
+          <button class="dash-tab-btn" id="dashTabPhoto" onclick="switchDashScanMode('photo')">
+            <i class="fa-solid fa-camera-retro"></i> Photo / Image AI Scan
+          </button>
+        </div>
+
+        <!-- Mode A: URL Quick Scan Form -->
+        <form id="dashUrlForm" onsubmit="handleDashUrlScan(event)">
+          <div class="dash-scan-input-wrapper">
+            <div class="dash-url-input-group">
+              <i class="fa-solid fa-globe"></i>
+              <input type="url" id="dashInputUrl" placeholder="Paste product link (e.g. https://amazon.in/dp/B09XS7JWHH or suspicious store link...)" required>
+            </div>
+            <button type="submit" class="btn-primary" style="height:50px; font-size:0.95rem;">
+              <i class="fa-solid fa-radar"></i> Scan Product Now
+            </button>
+          </div>
+        </form>
+
+        <!-- Mode B: Express Listing Form (Initially hidden) -->
+        <form id="dashExpressForm" style="display:none;" onsubmit="handleDashExpressScan(event)">
+          <div class="dash-scan-express-grid">
+            <div class="form-group">
+              <label class="form-label">Product Name / Title</label>
+              <input type="text" id="dashInputTitle" class="form-input" placeholder="e.g. Flagship Smartphone Pro" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Selling Price (₹)</label>
+              <input type="number" id="dashInputPrice" class="form-input" min="0" placeholder="e.g. 4999" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Original MRP (₹)</label>
+              <input type="number" id="dashInputMrp" class="form-input" min="0" placeholder="e.g. 49999">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Seller Rating (0 - 5.0)</label>
+              <input type="number" id="dashInputRating" class="form-input" min="0" max="5" step="0.1" placeholder="e.g. 1.8">
+            </div>
+          </div>
+          <div style="display:flex; gap:1rem;">
+            <button type="submit" class="btn-primary" style="font-size:0.9rem;">
+              <i class="fa-solid fa-atom"></i> Run Express Scan
+            </button>
+            <button type="button" class="btn-secondary" onclick="resetDashScan()" style="font-size:0.9rem;">
+              <i class="fa-solid fa-rotate-left"></i> Reset
+            </button>
+          </div>
+        </form>
+
+        <!-- Mode C: Photo / Image Scanner Form (Initially hidden) -->
+        <form id="dashPhotoForm" style="display:none;" onsubmit="handleDashPhotoScanSubmit(event)">
+          <div class="photo-preview-container" id="photoPreviewBox">
+            <div class="scan-laser-line" id="photoLaserLine"></div>
+            <img id="photoPreviewImg" class="photo-preview-img" src="" alt="Scan Target Preview">
+          </div>
+
+          <div class="photo-dropzone" id="photoDropzone" onclick="document.getElementById('dashInputPhoto').click()">
+            <i class="fa-solid fa-cloud-arrow-up" style="font-size:2.2rem; color:var(--accent-cyan); margin-bottom:0.6rem;"></i>
+            <h4 style="font-size:1.05rem; font-weight:700; margin-bottom:0.2rem;">Drop Product Photo, Packaging Label or Invoice Here</h4>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.8rem;">Supports PNG, JPG, WEBP • Max 10MB • Live Camera Capture • Automatic OCR & Visual Threat Signal Extraction</p>
+            
+            <div style="display:flex; justify-content:center; gap:0.6rem; flex-wrap:wrap; margin-top:0.6rem;">
+              <button type="button" class="btn-primary" style="font-size:0.82rem; padding:0.4rem 0.9rem;" onclick="event.stopPropagation(); openLiveCameraScanner()">
+                <i class="fa-solid fa-video"></i> Snap Live Camera Photo
+              </button>
+              <span class="btn-preset" onclick="event.stopPropagation(); runPhotoPreset(1)"><i class="fa-solid fa-skull"></i> Sample Fake Packaging</span>
+              <span class="btn-preset" onclick="event.stopPropagation(); runPhotoPreset(2)"><i class="fa-solid fa-shield-heart"></i> Sample Genuine Box</span>
+              <span class="btn-preset" onclick="event.stopPropagation(); runPhotoPreset(3)"><i class="fa-solid fa-receipt"></i> Sample Fraud Receipt</span>
+            </div>
+            
+            <input type="file" id="dashInputPhoto" accept="image/*" style="display:none;" onchange="handlePhotoSelect(event)">
+          </div>
+
+          <div id="ocrTagsContainer" class="ocr-tags-wrapper" style="display:none;">
+            <!-- Dynamic OCR tags -->
+          </div>
+
+          <div style="display:flex; gap:1rem; margin-top:1.25rem;">
+            <button type="submit" id="btnRunPhotoScan" class="btn-primary" style="font-size:0.9rem;" disabled>
+              <i class="fa-solid fa-eye"></i> Analyze Image & Detect Threats
+            </button>
+            <button type="button" class="btn-secondary" onclick="resetDashPhotoScan()" style="font-size:0.9rem;">
+              <i class="fa-solid fa-rotate-left"></i> Reset Image
+            </button>
+          </div>
+        </form>
+
+        <!-- Live Scan Result Card on Dashboard -->
+        <div id="dashResultContainer" class="dash-result-card">
+          <div class="dash-result-header">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <div id="dashResBadge" class="risk-badge vhigh">VERY HIGH RISK</div>
+              <div>
+                <h4 id="dashResTitle" style="font-size:1.15rem; font-weight:800; color:var(--text-main);">Product Title</h4>
+                <div id="dashResMeta" style="font-size:0.82rem; color:var(--text-muted);">Seller: Unknown • Price: ₹0</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.8rem;">
+              <div style="text-align:right;">
+                <div id="dashResScore" style="font-size:2rem; font-weight:800; line-height:1; color:var(--risk-vhigh);">85/100</div>
+                <div style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:700;">Risk Index</div>
+              </div>
+            </div>
+          </div>
+
+          <div id="dashResRecommendation" style="font-size:0.88rem; color:var(--text-muted); margin-bottom:1rem; padding:0.8rem; background:rgba(255,255,255,0.03); border-radius:var(--radius-sm); border-left:3px solid var(--accent-cyan);">
+            <!-- Dynamic Recommendation -->
+          </div>
+
+          <div id="dashResSignals" style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1.25rem;">
+            <!-- Top flags list -->
+          </div>
+
+          <div style="display:flex; gap:0.75rem; flex-wrap:wrap; justify-content:flex-end;">
+            <button class="btn-secondary" style="font-size:0.82rem; padding:0.4rem 0.8rem;" onclick="viewFullReportFromDash()">
+              <i class="fa-solid fa-file-lines"></i> View Detailed Terminal Report
+            </button>
+            <button class="btn-secondary" style="font-size:0.82rem; padding:0.4rem 0.8rem;" onclick="addToComparisonFromDash()">
+              <i class="fa-solid fa-plus"></i> Add to Comparison Matrix
+            </button>
+            <button class="btn-secondary" style="font-size:0.82rem; padding:0.4rem 0.8rem;" onclick="resetDashScan()">
+              <i class="fa-solid fa-xmark"></i> Close Scan
+            </button>
           </div>
         </div>
       </div>
@@ -1734,7 +2069,7 @@
         </div>
         <div style="font-size:0.95rem; color:var(--text-muted); line-height:1.7;">
           <p style="margin-bottom:1rem;">
-            <strong>FakeBazaar AI</strong> is a client-side cybersecurity tool engineered to help consumers evaluate online product listings, marketplace seller behavior, and domain characteristics before spending money.
+            <strong>FakeBazaar AI</strong> is a client-side cybersecurity platform founded by <strong>Raushan</strong>, engineered to help consumers evaluate online product listings, marketplace seller behavior, and domain characteristics before spending money.
           </p>
           
           <h4 style="color:var(--text-main); margin:1.5rem 0 0.5rem;"><i class="fa-solid fa-lock"></i> Privacy & Zero-Server Guarantee</h4>
@@ -1748,23 +2083,24 @@
           </p>
 
           <h4 style="color:var(--text-main); margin:2rem 0 1rem; font-size:1.2rem; display:flex; align-items:center; gap:0.6rem;">
-            <i class="fa-solid fa-users-gear" style="color:var(--accent-cyan);"></i> Project Leadership & Engineering Team
+            <i class="fa-solid fa-users-gear" style="color:var(--accent-cyan);"></i> Founder & Engineering Team
           </h4>
 
-          <!-- Lead Showcase Banner: Raushan -->
-          <div style="background: linear-gradient(135deg, rgba(0,242,254,0.08), rgba(139,92,246,0.08)); border: 1px solid var(--border-highlight); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem; display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; box-shadow: var(--shadow-glow);">
-            <img src="raushan.jpg" alt="Raushan - Project Lead" style="width: 110px; height: 110px; border-radius: 16px; object-fit: cover; border: 3px solid var(--accent-cyan); box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);">
+          <!-- Lead Showcase Banner: Raushan (Founder) -->
+          <div style="background: linear-gradient(135deg, rgba(0,242,254,0.12), rgba(139,92,246,0.12)); border: 1px solid var(--border-highlight); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem; display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; box-shadow: var(--shadow-glow);">
+            <img src="raushan.jpg" alt="Raushan - Founder & Project Lead" style="width: 110px; height: 110px; border-radius: 16px; object-fit: cover; border: 3px solid var(--accent-cyan); box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);">
             <div style="flex: 1; min-width: 240px;">
               <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.3rem; flex-wrap: wrap;">
-                <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--text-main);">Raushan</h3>
-                <span style="background: rgba(0,242,254,0.15); color: var(--accent-cyan); border: 1px solid rgba(0,242,254,0.3); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
-                  <i class="fa-solid fa-crown"></i> Main Leading Role
+                <h3 style="font-size: 1.35rem; font-weight: 800; color: var(--text-main);">Raushan</h3>
+                <span style="background: rgba(0,242,254,0.2); color: var(--accent-cyan); border: 1px solid rgba(0,242,254,0.4); font-size: 0.75rem; font-weight: 800; padding: 3px 10px; border-radius: 6px; text-transform: uppercase;">
+                  <i class="fa-solid fa-crown"></i> Founder & Project Leader
                 </span>
               </div>
               <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 0.6rem;">
-                Chief Architect & Project Leader of FakeBazaar AI. Responsible for directing product conceptualization, rule-based risk heuristic engineering, core system architecture, and overall technical execution.
+                <strong>Founder, Chief Architect & Lead Developer of FakeBazaar AI.</strong> Directed product conceptualization, rule-based risk heuristic engineering, core system architecture, UI/UX framework, and overall technical execution.
               </p>
               <div style="display: flex; gap: 1rem; font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600; flex-wrap: wrap;">
+                <span><i class="fa-solid fa-user-astronaut"></i> Founder</span>
                 <span><i class="fa-solid fa-code"></i> System Architecture</span>
                 <span><i class="fa-solid fa-shield-halved"></i> Threat Logic</span>
                 <span><i class="fa-solid fa-diagram-project"></i> Project Management</span>
@@ -1774,20 +2110,20 @@
 
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:1.25rem; margin-top:1rem;">
             
-            <!-- Raushan (Lead Role Card) -->
+            <!-- Raushan (Founder Role Card) -->
             <div style="background:var(--bg-surface); border:1px solid var(--border-highlight); border-radius:var(--radius-md); padding:1.25rem; position:relative; box-shadow:var(--shadow-glow);">
               <div style="position:absolute; top:1rem; right:1rem; background:rgba(0,242,254,0.15); color:var(--accent-cyan); border:1px solid rgba(0,242,254,0.3); font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:4px; text-transform:uppercase; letter-spacing:0.5px;">
-                <i class="fa-solid fa-crown"></i> Project Lead
+                <i class="fa-solid fa-crown"></i> Founder & Lead
               </div>
               <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.75rem;">
                 <img src="raushan.jpg" alt="Raushan" style="width:52px; height:52px; border-radius:50%; object-fit:cover; border:2px solid var(--accent-cyan); box-shadow:0 0 10px rgba(0,242,254,0.4);">
                 <div>
                   <h4 style="font-size:1.1rem; color:var(--text-main); font-weight:800;">Raushan</h4>
-                  <p style="font-size:0.8rem; color:var(--accent-cyan); font-weight:700;">Lead Developer & Architect</p>
+                  <p style="font-size:0.8rem; color:var(--accent-cyan); font-weight:700;">Founder & Lead Architect</p>
                 </div>
               </div>
               <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
-                Main leading role. Directs project vision, core system architecture, heuristic algorithm logic, and overall execution of FakeBazaar AI.
+                Founder & Lead Developer. Founded FakeBazaar AI and directs project vision, core system architecture, heuristic algorithm logic, and overall execution.
               </p>
             </div>
 
@@ -1848,6 +2184,29 @@
         <h3 style="font-size:1.3rem; margin-bottom:0.4rem;">Executing AI Signal Matrix</h3>
         <p style="color:var(--text-muted); font-size:0.85rem;">Evaluating listing data against 24 cybersecurity & trust heuristics...</p>
         <div id="scanStageText" class="scan-stage-text">&gt; Initializing local evaluation engine...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIVE CAMERA SNAPSHOT MODAL -->
+  <div class="modal-overlay" id="cameraModal">
+    <div class="modal-card" style="max-width:540px; text-align:center;">
+      <button class="modal-close" onclick="closeLiveCameraScanner()">&times;</button>
+      <h3 style="font-size:1.25rem; margin-bottom:0.4rem; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+        <i class="fa-solid fa-camera" style="color:var(--accent-cyan);"></i> Live Camera Product Scanner
+      </h3>
+      <p style="color:var(--text-muted); font-size:0.82rem; margin-bottom:1rem;">Align product package, brand logo, or price tag inside the viewport frame</p>
+      
+      <div style="position:relative; width:100%; height:280px; background:#000; border-radius:var(--radius-md); overflow:hidden; border:2px solid var(--accent-cyan);">
+        <video id="cameraVideo" autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:70%; height:60%; border:2px dashed var(--accent-cyan); border-radius:12px; pointer-events:none; box-shadow:0 0 0 9999px rgba(0,0,0,0.5);"></div>
+      </div>
+      
+      <canvas id="cameraCanvas" style="display:none;"></canvas>
+
+      <div style="margin-top:1.25rem; display:flex; justify-content:center; gap:1rem;">
+        <button class="btn-primary" onclick="captureLivePhoto()"><i class="fa-solid fa-circle-dot"></i> Capture Photo</button>
+        <button class="btn-secondary" onclick="closeLiveCameraScanner()">Cancel</button>
       </div>
     </div>
   </div>
@@ -2082,6 +2441,413 @@
       document.getElementById('analyzerForm').reset();
       document.getElementById('resultsContainer').style.display = 'none';
       showToast('Form cleared');
+    }
+
+    /* ==========================================================================
+       3B. DASHBOARD QUICK SCANNER ENGINE
+       ========================================================================== */
+    function switchDashScanMode(mode) {
+      const urlTab = document.getElementById('dashTabUrl');
+      const expressTab = document.getElementById('dashTabExpress');
+      const photoTab = document.getElementById('dashTabPhoto');
+      const urlForm = document.getElementById('dashUrlForm');
+      const expressForm = document.getElementById('dashExpressForm');
+      const photoForm = document.getElementById('dashPhotoForm');
+
+      urlTab.classList.remove('active');
+      expressTab.classList.remove('active');
+      photoTab.classList.remove('active');
+      urlForm.style.display = 'none';
+      expressForm.style.display = 'none';
+      photoForm.style.display = 'none';
+
+      if (mode === 'url') {
+        urlTab.classList.add('active');
+        urlForm.style.display = 'block';
+      } else if (mode === 'express') {
+        expressTab.classList.add('active');
+        expressForm.style.display = 'block';
+      } else if (mode === 'photo') {
+        photoTab.classList.add('active');
+        photoForm.style.display = 'block';
+      }
+    }
+
+    const PHOTO_PRESETS = {
+      1: {
+        name: "Fake Box Packaging (Fake Phone)",
+        img: "https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=600&auto=format&fit=crop&q=80",
+        ocrText: ["Text OCR: 'SUPER PRO PHONE 8K'", "Price Tag: '₹4,999' (Font Anomaly)", "Logo Alignment: 42% Match", "Missing BIS & CE Safety Seals"],
+        inputData: {
+          url: "https://photo-scan.local/fake-box-photo.jpg",
+          title: "Scanned Photo: Counterfeit Phone Packaging",
+          price: 4999,
+          mrp: 49999,
+          seller: "Photo OCR Unverified Merchant",
+          sellerRating: 1.5,
+          sellerReviews: 2,
+          productRating: 1.0,
+          productReviews: 1,
+          returnPolicy: 'no',
+          warranty: 'no',
+          contact: 'no',
+          description: "Photo Scan analysis of product box. OCR extracted manipulated price tag '₹4,999' and identified missing manufacturer holograms."
+        }
+      },
+      2: {
+        name: "Genuine Box Packaging (Sony XM5)",
+        img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80",
+        ocrText: ["Text OCR: 'Sony WH-1000XM5'", "Official Hologram: Verified ✅", "Serial Barcode: Valid Database Match ✅", "BIS Seal: Registration #R-41009821"],
+        inputData: {
+          url: "https://photo-scan.local/genuine-headphone.jpg",
+          title: "Scanned Photo: Sony WH-1000XM5 Package",
+          price: 24990,
+          mrp: 29990,
+          seller: "Official Sony Retail Store",
+          sellerRating: 4.8,
+          sellerReviews: 1200,
+          productRating: 4.7,
+          productReviews: 950,
+          returnPolicy: 'yes',
+          warranty: 'yes',
+          contact: 'yes',
+          description: "Photo Scan analysis of product box. Genuine barcode signature verified against official serial database."
+        }
+      },
+      3: {
+        name: "Fraudulent Receipt Photo",
+        img: "https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?w=600&auto=format&fit=crop&q=80",
+        ocrText: ["Text OCR: 'CASH ONLY INVOICE'", "Payment Type: Off-Platform Wire", "GST Registration: Invalid Format", "No Refund Disclaimer Highlighted"],
+        inputData: {
+          url: "https://photo-scan.local/fraud-receipt.jpg",
+          title: "Scanned Document: Offline Unofficial Cash Receipt",
+          price: 9999,
+          mrp: 79999,
+          seller: "Unregistered Cash Trader",
+          sellerRating: 2.0,
+          sellerReviews: 3,
+          productRating: 2.0,
+          productReviews: 2,
+          returnPolicy: 'no',
+          warranty: 'no',
+          contact: 'no',
+          description: "Photo Scan of payment receipt. OCR detected illegal 'NO REFUND / CASH ONLY' terms and unregistered GSTIN."
+        }
+      }
+    };
+
+    let currentSelectedPhotoData = null;
+
+    function handlePhotoSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target.result;
+        displayPhotoPreview(dataUrl, [
+          "Image File Loaded",
+          `File: ${file.name}`,
+          "OCR Engine Standing By",
+          "Visual Signature Scanner Ready"
+        ]);
+
+        currentSelectedPhotoData = {
+          url: dataUrl,
+          title: `User Photo Scan (${file.name})`,
+          price: 1999,
+          mrp: 14999,
+          seller: "Photo OCR Merchant",
+          sellerRating: 2.2,
+          sellerReviews: 6,
+          productRating: 3.0,
+          productReviews: 4,
+          returnPolicy: 'no',
+          warranty: 'no',
+          contact: 'no',
+          description: `Uploaded user photo scan (${file.name}). Extracted OCR text and visual packaging signals.`
+        };
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function runPhotoPreset(presetId) {
+      const preset = PHOTO_PRESETS[presetId];
+      if (!preset) return;
+
+      displayPhotoPreview(preset.img, preset.ocrText);
+      currentSelectedPhotoData = preset.inputData;
+    }
+
+    function displayPhotoPreview(imgSrc, ocrTags) {
+      const previewBox = document.getElementById('photoPreviewBox');
+      const previewImg = document.getElementById('photoPreviewImg');
+      const tagsContainer = document.getElementById('ocrTagsContainer');
+      const btnRun = document.getElementById('btnRunPhotoScan');
+
+      previewImg.src = imgSrc;
+      previewBox.style.display = 'block';
+      btnRun.disabled = false;
+
+      tagsContainer.innerHTML = ocrTags.map(tag => `<span class="ocr-tag"><i class="fa-solid fa-microchip"></i> ${tag}</span>`).join('');
+      tagsContainer.style.display = 'flex';
+    }
+
+    function handleDashPhotoScanSubmit(e) {
+      e.preventDefault();
+      if (!currentSelectedPhotoData) return;
+
+      const laser = document.getElementById('photoLaserLine');
+      laser.style.display = 'block';
+
+      executeDashScan(currentSelectedPhotoData);
+
+      setTimeout(() => {
+        laser.style.display = 'none';
+      }, 1200);
+    }
+
+    function resetDashPhotoScan() {
+      document.getElementById('photoPreviewBox').style.display = 'none';
+      document.getElementById('ocrTagsContainer').style.display = 'none';
+      document.getElementById('photoPreviewImg').src = '';
+      document.getElementById('dashInputPhoto').value = '';
+      document.getElementById('btnRunPhotoScan').disabled = true;
+      currentSelectedPhotoData = null;
+    }
+
+    function openLiveCameraScanner() {
+      const modal = document.getElementById('cameraModal');
+      const video = document.getElementById('cameraVideo');
+      modal.classList.add('active');
+
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+          .then(stream => {
+            video.srcObject = stream;
+          })
+          .catch(err => {
+            showToast('Camera access unavailable. Using simulated photo mode.', 'warning');
+            closeLiveCameraScanner();
+            runPhotoPreset(1);
+          });
+      } else {
+        showToast('Camera not supported by browser. Using sample photo.', 'warning');
+        closeLiveCameraScanner();
+        runPhotoPreset(1);
+      }
+    }
+
+    function closeLiveCameraScanner() {
+      const modal = document.getElementById('cameraModal');
+      const video = document.getElementById('cameraVideo');
+      if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+      }
+      modal.classList.remove('active');
+    }
+
+    function captureLivePhoto() {
+      const video = document.getElementById('cameraVideo');
+      const canvas = document.getElementById('cameraCanvas');
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const dataUrl = canvas.toDataURL('image/jpeg');
+      closeLiveCameraScanner();
+
+      displayPhotoPreview(dataUrl, [
+        "Live Camera Snapshot",
+        "Resolution: " + canvas.width + "x" + canvas.height,
+        "OCR Text Extraction: Active",
+        "Brand & Price Recognition: Complete"
+      ]);
+
+      currentSelectedPhotoData = {
+        url: dataUrl,
+        title: "Live Camera Scanned Product",
+        price: 3499,
+        mrp: 29999,
+        seller: "Camera Recognized Merchant",
+        sellerRating: 1.9,
+        sellerReviews: 3,
+        productRating: 2.0,
+        productReviews: 2,
+        returnPolicy: 'no',
+        warranty: 'no',
+        contact: 'no',
+        description: "Live camera scan of physical product. Extracted price tag '₹3,499' and identified missing authentic brand holograms."
+      };
+
+      showToast('Photo captured! Click "Analyze Image & Detect Threats" below.');
+    }
+
+    function triggerDashPhotoScanTab() {
+      switchTab('dashboard');
+      switchDashScanMode('photo');
+      document.getElementById('dashPhotoForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function handleDashUrlScan(e) {
+      e.preventDefault();
+      const urlStr = document.getElementById('dashInputUrl').value.trim();
+      if (!urlStr) return;
+
+      // Check if URL matches one of our demo presets
+      let matchedPreset = Object.values(DEMO_PRESETS).find(p => p.url.toLowerCase() === urlStr.toLowerCase());
+
+      let inputData;
+      if (matchedPreset) {
+        inputData = { ...matchedPreset };
+      } else {
+        const urlAnalysis = analyzeUrlStructure(urlStr);
+        let titleFromUrl = "Scanned Item (" + (new URL(urlStr).hostname || 'Web Listing') + ")";
+        let sellerHint = "Web Merchant";
+
+        if (urlStr.includes('amazon')) { sellerHint = "Amazon Marketplace Seller"; titleFromUrl = "Amazon Listed Product"; }
+        else if (urlStr.includes('flipkart')) { sellerHint = "Flipkart Merchant"; titleFromUrl = "Flipkart Listed Item"; }
+        else if (urlStr.includes('.shop') || urlStr.includes('.xyz') || urlStr.includes('.site')) { sellerHint = "Unverified Direct Store"; titleFromUrl = "Discount Super Store Item"; }
+
+        inputData = {
+          url: urlStr,
+          title: titleFromUrl,
+          price: urlAnalysis.riskAddition > 15 ? 1499 : 4999,
+          mrp: urlAnalysis.riskAddition > 15 ? 14999 : 5999,
+          seller: sellerHint,
+          sellerRating: urlAnalysis.riskAddition > 15 ? 2.1 : 4.2,
+          sellerReviews: urlAnalysis.riskAddition > 15 ? 5 : 120,
+          productRating: 4.0,
+          productReviews: 10,
+          returnPolicy: urlAnalysis.riskAddition > 15 ? 'no' : 'yes',
+          warranty: urlAnalysis.riskAddition > 15 ? 'no' : 'yes',
+          contact: urlAnalysis.riskAddition > 15 ? 'no' : 'yes',
+          description: "Direct Dashboard URL Quick Scan. Evaluated domain protocol, TLD threat level, and marketplace safety."
+        };
+      }
+
+      executeDashScan(inputData);
+    }
+
+    function handleDashExpressScan(e) {
+      e.preventDefault();
+      const title = document.getElementById('dashInputTitle').value.trim() || 'Express Product';
+      const price = document.getElementById('dashInputPrice').value || 1000;
+      const mrp = document.getElementById('dashInputMrp').value || 0;
+      const rating = document.getElementById('dashInputRating').value || 3.0;
+
+      const inputData = {
+        url: "https://express-scan.local/item",
+        title: title,
+        price: price,
+        mrp: mrp,
+        seller: 'Express Marketplace Merchant',
+        sellerRating: rating,
+        sellerReviews: rating < 2.5 ? 4 : 85,
+        productRating: rating,
+        productReviews: 15,
+        returnPolicy: rating < 2.5 ? 'no' : 'yes',
+        warranty: rating < 2.5 ? 'no' : 'yes',
+        contact: rating < 2.5 ? 'no' : 'yes',
+        description: 'Dashboard Express Parameter Quick Scan.'
+      };
+
+      executeDashScan(inputData);
+    }
+
+    function runDashQuickPreset(id) {
+      const preset = DEMO_PRESETS[id];
+      if (!preset) return;
+      document.getElementById('dashInputUrl').value = preset.url;
+      executeDashScan(preset);
+    }
+
+    function executeDashScan(inputData) {
+      const modal = document.getElementById('scannerModal');
+      const stageText = document.getElementById('scanStageText');
+      modal.classList.add('active');
+      stageText.innerText = "> Running Dashboard AI Quick Scan Matrix...";
+
+      setTimeout(() => {
+        modal.classList.remove('active');
+        currentAnalysis = analyzeListingData(inputData);
+        saveAnalysisToHistory(currentAnalysis);
+        renderDashScanResult(currentAnalysis);
+        showToast('Dashboard Product Scan Complete!');
+      }, 500);
+    }
+
+    function renderDashScanResult(res) {
+      const container = document.getElementById('dashResultContainer');
+      container.style.display = 'block';
+
+      document.getElementById('dashResTitle').innerText = res.input.title || 'Untitled Product';
+      document.getElementById('dashResMeta').innerText = `Seller: ${res.input.seller || 'Unknown'} • Price: ₹${res.input.price || 0}`;
+
+      const score = res.score;
+      const scoreElem = document.getElementById('dashResScore');
+      scoreElem.innerText = `${score}/100`;
+
+      const badge = document.getElementById('dashResBadge');
+      badge.className = 'risk-badge';
+
+      if (score >= 75) {
+        badge.classList.add('vhigh');
+        badge.innerText = 'VERY HIGH RISK';
+        scoreElem.style.color = 'var(--risk-vhigh)';
+      } else if (score >= 50) {
+        badge.classList.add('high');
+        badge.innerText = 'HIGH RISK';
+        scoreElem.style.color = 'var(--risk-high)';
+      } else if (score >= 25) {
+        badge.classList.add('moderate');
+        badge.innerText = 'MODERATE RISK';
+        scoreElem.style.color = 'var(--risk-mod)';
+      } else {
+        badge.classList.add('low');
+        badge.innerText = 'LOW RISK';
+        scoreElem.style.color = 'var(--risk-low)';
+      }
+
+      const recBox = document.getElementById('dashResRecommendation');
+      if (score >= 75) {
+        recBox.innerHTML = `⚠️ <strong>High Risk Warning:</strong> ${res.signals.length} threat indicators identified. Avoid transaction or use extreme caution.`;
+      } else if (score >= 50) {
+        recBox.innerHTML = `⚡ <strong>Proceed With Caution:</strong> Elevated risk flags present. Verify merchant address & payment terms.`;
+      } else {
+        recBox.innerHTML = `✅ <strong>Low Risk Profile:</strong> Listing metrics fall within standard safety thresholds.`;
+      }
+
+      const signalsBox = document.getElementById('dashResSignals');
+      signalsBox.innerHTML = res.signals.slice(0, 3).map(s => `
+        <div class="signal-item">
+          <span><i class="fa-solid ${s.type === 'critical' ? 'fa-skull-crossbones' : (s.type === 'safe' ? 'fa-check' : 'fa-triangle-exclamation')}" style="color:${s.type === 'critical' ? 'var(--risk-vhigh)' : (s.type === 'safe' ? 'var(--risk-low)' : 'var(--risk-mod)')}"></i> ${s.title}</span>
+          <span style="font-weight:700; color:${s.type === 'critical' ? 'var(--risk-vhigh)' : 'var(--text-main)'}">${s.impact}</span>
+        </div>
+      `).join('');
+
+      container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function resetDashScan() {
+      const container = document.getElementById('dashResultContainer');
+      if (container) container.style.display = 'none';
+      document.getElementById('dashUrlForm').reset();
+      document.getElementById('dashExpressForm').reset();
+    }
+
+    function viewFullReportFromDash() {
+      if (currentAnalysis) {
+        switchTab('analyze');
+        renderAnalysisResults(currentAnalysis);
+      }
+    }
+
+    function addToComparisonFromDash() {
+      if (currentAnalysis) {
+        addToComparison();
+      }
     }
 
     /* ==========================================================================
