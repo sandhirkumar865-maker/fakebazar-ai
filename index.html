@@ -1,0 +1,2820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FakeBazaar AI — Fake Product & Scam Listing Detector</title>
+  <meta name="description" content="AI-powered heuristic scanner to analyze online product listings, detect suspicious pricing, seller signals, fake reviews, and URL security risks before you buy.">
+  
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --bg-surface: #111726;
+      --bg-card: rgba(19, 27, 45, 0.75);
+      --bg-card-hover: rgba(27, 38, 62, 0.85);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-highlight: rgba(0, 242, 254, 0.3);
+      
+      --accent-cyan: #00f2fe;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-pink: #ec4899;
+
+      --risk-low: #10b981;
+      --risk-low-bg: rgba(16, 185, 129, 0.12);
+      --risk-mod: #f59e0b;
+      --risk-mod-bg: rgba(245, 158, 11, 0.12);
+      --risk-high: #f97316;
+      --risk-high-bg: rgba(249, 115, 22, 0.12);
+      --risk-vhigh: #ef4444;
+      --risk-vhigh-bg: rgba(239, 68, 68, 0.15);
+
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --shadow-glow: 0 0 25px rgba(0, 242, 254, 0.15);
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(0, 242, 254, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 85% 65%, rgba(139, 92, 246, 0.06) 0%, transparent 45%);
+    }
+
+    code, pre, .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-dark);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1f293d;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-blue);
+    }
+
+    /* Container & Layout */
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Header & Navbar */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(9, 13, 22, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 0;
+    }
+    .nav-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text-main);
+      font-weight: 800;
+      font-size: 1.4rem;
+      letter-spacing: -0.5px;
+    }
+    .brand-logo i {
+      color: var(--accent-cyan);
+      font-size: 1.6rem;
+      filter: drop-shadow(0 0 8px rgba(0, 242, 254, 0.6));
+    }
+    .brand-logo span {
+      background: linear-gradient(135deg, #ffffff 30%, var(--accent-cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .brand-badge {
+      font-size: 0.65rem;
+      background: rgba(0, 242, 254, 0.1);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .nav-links {
+      display: flex;
+      gap: 0.5rem;
+      list-style: none;
+    }
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.6rem 1rem;
+      font-weight: 600;
+      font-size: 0.92rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .nav-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .nav-btn.active {
+      color: var(--accent-cyan);
+      background: rgba(0, 242, 254, 0.08);
+      border: 1px solid rgba(0, 242, 254, 0.2);
+    }
+    .nav-cta {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      color: #fff;
+      font-weight: 700;
+      padding: 0.6rem 1.2rem;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+    .nav-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45);
+    }
+    .mobile-menu-toggle {
+      display: none;
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+
+    /* Right Navbar Action Group & Theme Toggle */
+    .nav-right-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .theme-toggle-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      transition: var(--transition);
+    }
+    .theme-toggle-btn:hover {
+      background: rgba(0, 242, 254, 0.12);
+      color: var(--accent-cyan);
+      border-color: rgba(0, 242, 254, 0.4);
+      transform: translateY(-2px);
+    }
+
+    /* Light Mode Custom Theme Overrides */
+    body.light-mode {
+      --bg-dark: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-card: rgba(255, 255, 255, 0.9);
+      --bg-card-hover: rgba(241, 245, 249, 0.95);
+      --border-color: rgba(0, 0, 0, 0.1);
+      --border-highlight: rgba(0, 180, 216, 0.4);
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #64748b;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 65%, rgba(139, 92, 246, 0.08) 0%, transparent 45%);
+    }
+    body.light-mode .navbar {
+      background: rgba(255, 255, 255, 0.9);
+    }
+    body.light-mode .theme-toggle-btn {
+      background: rgba(0, 0, 0, 0.05);
+      border-color: rgba(0, 0, 0, 0.15);
+      color: #0f172a;
+    }
+    body.light-mode .theme-toggle-btn:hover {
+      background: rgba(0, 0, 0, 0.1);
+      color: var(--accent-blue);
+    }
+    body.light-mode .mock-listing-card,
+    body.light-mode .url-analysis-box,
+    body.light-mode .form-input,
+    body.light-mode .form-select,
+    body.light-mode .form-textarea,
+    body.light-mode .modal-card,
+    body.light-mode .stat-card,
+    body.light-mode .signal-card,
+    body.light-mode .history-card,
+    body.light-mode .check-item {
+      background: #ffffff;
+      color: #0f172a;
+      border-color: rgba(0, 0, 0, 0.12);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    }
+    body.light-mode .btn-secondary,
+    body.light-mode .btn-preset {
+      background: rgba(0, 0, 0, 0.05);
+      color: #0f172a;
+      border-color: rgba(0, 0, 0, 0.15);
+    }
+    body.light-mode .btn-secondary:hover,
+    body.light-mode .btn-preset:hover {
+      background: rgba(0, 0, 0, 0.09);
+    }
+    body.light-mode .compare-table th {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    body.light-mode .compare-table td {
+      background: #ffffff;
+      color: #334155;
+    }
+
+    /* Page Sections Navigation */
+    .page-section {
+      display: none;
+      padding: 2.5rem 0 4rem;
+      animation: fadeIn 0.35s ease;
+    }
+    .page-section.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Hero Section */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+      padding: 3rem 0 4rem;
+    }
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(139, 92, 246, 0.12);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      color: #c084fc;
+      padding: 0.4rem 1rem;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    .hero-title {
+      font-size: 3.2rem;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 1.2rem;
+      letter-spacing: -1px;
+    }
+    .hero-title .gradient-text {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-desc {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      max-width: 540px;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      color: #090d16;
+      font-weight: 800;
+      padding: 0.85rem 1.8rem;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1rem;
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(0, 242, 254, 0.5);
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      font-weight: 600;
+      padding: 0.85rem 1.6rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1rem;
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* CSS Visual Scanner Graphics */
+    .hero-visual {
+      position: relative;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), var(--shadow-glow);
+      overflow: hidden;
+    }
+    .hero-visual::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(0, 242, 254, 0.03), transparent);
+      transform: rotate(30deg);
+      animation: scanSweep 6s infinite linear;
+    }
+    @keyframes scanSweep {
+      0% { transform: translateY(-30%) rotate(30deg); }
+      100% { transform: translateY(30%) rotate(30deg); }
+    }
+    .scanner-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1rem;
+      margin-bottom: 1rem;
+    }
+    .scanner-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .scanner-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .scanner-dot.red { background: #ff5f56; }
+    .scanner-dot.yellow { background: #ffbd2e; }
+    .scanner-dot.green { background: #27c93f; }
+    .scanner-status {
+      font-size: 0.75rem;
+      color: var(--accent-cyan);
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .mock-listing-card {
+      background: rgba(10, 14, 23, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: 1rem;
+      position: relative;
+    }
+    .mock-img {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #1f293d, #0f172a);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: var(--accent-cyan);
+    }
+    .mock-info h4 {
+      font-size: 1rem;
+      margin-bottom: 0.3rem;
+    }
+    .mock-prices {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.4rem;
+    }
+    .mock-price {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--risk-vhigh);
+    }
+    .mock-mrp {
+      text-decoration: line-through;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+    .mock-badge {
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+    .mock-signals {
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .signal-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 0.5rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+    }
+
+    /* Section Cards & Layouts */
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 1.8rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .card-title i {
+      color: var(--accent-cyan);
+    }
+
+    /* Dashboard Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+    .stat-icon.blue { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+    .stat-icon.red { background: rgba(239, 68, 68, 0.15); color: var(--risk-vhigh); }
+    .stat-icon.green { background: rgba(16, 185, 129, 0.15); color: var(--risk-low); }
+    .stat-icon.purple { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); }
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .stat-label {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    /* Analyzer Form Layout */
+    .analyzer-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+    .form-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .form-label .helper {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+    .form-input, .form-select, .form-textarea {
+      background: rgba(10, 14, 23, 0.9);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1rem;
+      color: var(--text-main);
+      font-size: 0.92rem;
+      transition: var(--transition);
+      outline: none;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+    }
+    .form-textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+    .preset-buttons {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .btn-preset {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .btn-preset:hover {
+      background: rgba(0, 242, 254, 0.1);
+      color: var(--accent-cyan);
+      border-color: rgba(0, 242, 254, 0.3);
+    }
+
+    /* Results Layout */
+    .results-container {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+    .results-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 900px) {
+      .results-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Dynamic Risk Dial / Gauge */
+    .score-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 2rem 1.5rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .gauge-wrapper {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      margin: 1rem 0;
+    }
+    .gauge-svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+    .gauge-bg {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.06);
+      stroke-width: 12;
+    }
+    .gauge-progress {
+      fill: none;
+      stroke: var(--risk-vhigh);
+      stroke-width: 12;
+      stroke-dasharray: 440;
+      stroke-dashoffset: 440;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.4s ease;
+    }
+    .gauge-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .gauge-score {
+      font-size: 2.8rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .gauge-max {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .risk-badge {
+      display: inline-block;
+      padding: 0.4rem 1.2rem;
+      border-radius: 50px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-top: 0.5rem;
+    }
+    .risk-badge.low { background: var(--risk-low-bg); color: var(--risk-low); border: 1px solid var(--risk-low); }
+    .risk-badge.moderate { background: var(--risk-mod-bg); color: var(--risk-mod); border: 1px solid var(--risk-mod); }
+    .risk-badge.high { background: var(--risk-high-bg); color: var(--risk-high); border: 1px solid var(--risk-high); }
+    .risk-badge.vhigh { background: var(--risk-vhigh-bg); color: var(--risk-vhigh); border: 1px solid var(--risk-vhigh); }
+
+    .confidence-tag {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.8rem;
+    }
+
+    /* Sub-score progress bars */
+    .sub-scores {
+      width: 100%;
+      margin-top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      text-align: left;
+    }
+    .sub-score-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .sub-score-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .bar-bg {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      width: 0%;
+      transition: width 1s ease;
+    }
+
+    /* Flags & Breakdown */
+    .signals-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .signal-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      transition: var(--transition);
+    }
+    .signal-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+    .signal-badge-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+    .signal-badge-icon.safe { background: var(--risk-low-bg); color: var(--risk-low); }
+    .signal-badge-icon.warning { background: var(--risk-mod-bg); color: var(--risk-mod); }
+    .signal-badge-icon.suspicious { background: var(--risk-high-bg); color: var(--risk-high); }
+    .signal-badge-icon.critical { background: var(--risk-vhigh-bg); color: var(--risk-vhigh); }
+
+    .signal-content {
+      flex: 1;
+    }
+    .signal-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.2rem;
+    }
+    .signal-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    .signal-impact {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .signal-impact.plus { background: rgba(239, 68, 68, 0.15); color: var(--risk-vhigh); }
+    .signal-impact.minus { background: rgba(16, 185, 129, 0.15); color: var(--risk-low); }
+    .signal-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* URL Analysis Component */
+    .url-analysis-box {
+      background: rgba(10, 14, 23, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    .url-pills {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+    .url-pill {
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 50px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-weight: 600;
+    }
+
+    /* Checklist Section */
+    .checklist-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .check-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      cursor: pointer;
+      transition: var(--transition);
+      user-select: none;
+    }
+    .check-item:hover {
+      border-color: rgba(0, 242, 254, 0.3);
+    }
+    .check-item.checked {
+      background: rgba(16, 185, 129, 0.08);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+    .checkbox-custom {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--text-muted);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+    .check-item.checked .checkbox-custom {
+      background: var(--risk-low);
+      border-color: var(--risk-low);
+      color: #000;
+    }
+    .checklist-progress-wrapper {
+      margin-bottom: 1.5rem;
+    }
+    .checklist-progress-text {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Comparison Table */
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+    }
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .compare-table th, .compare-table td {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .compare-table th {
+      background: rgba(17, 23, 38, 0.9);
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .compare-table td {
+      background: var(--bg-surface);
+      color: var(--text-muted);
+    }
+    .compare-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .winner-col {
+      background: rgba(16, 185, 129, 0.05) !important;
+      border-left: 2px solid var(--risk-low);
+      border-right: 2px solid var(--risk-low);
+    }
+
+    /* History Grid & Cards */
+    .history-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .search-box {
+      position: relative;
+      flex: 1;
+      min-width: 240px;
+    }
+    .search-box i {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+    }
+    .search-box input {
+      padding-left: 2.8rem;
+      width: 100%;
+    }
+    .history-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.25rem;
+    }
+    .history-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+    }
+    .history-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(0, 242, 254, 0.3);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+    .history-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+    .history-title {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text-main);
+      margin-bottom: 0.2rem;
+      line-clamp: 1;
+      -webkit-line-clamp: 1;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .history-date {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+    .history-details {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.85rem;
+    }
+
+    /* Modal Dialog */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(4, 7, 13, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 2rem;
+      position: relative;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    }
+    .modal-close {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.3rem;
+      cursor: pointer;
+    }
+    .modal-close:hover {
+      color: var(--text-main);
+    }
+
+    /* Scanning Animation Modal */
+    .scanner-modal-body {
+      text-align: center;
+      padding: 2rem 1rem;
+    }
+    .radar-spinner {
+      width: 90px;
+      height: 90px;
+      border: 4px solid rgba(0, 242, 254, 0.1);
+      border-top: 4px solid var(--accent-cyan);
+      border-radius: 50%;
+      margin: 0 auto 1.5rem;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .scan-stage-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      color: var(--accent-cyan);
+      margin-top: 1rem;
+    }
+
+    /* Toast Notifications */
+    .toast-container {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .toast {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--accent-cyan);
+      color: var(--text-main);
+      padding: 0.85rem 1.4rem;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      font-size: 0.9rem;
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Footer */
+    footer {
+      background: rgba(9, 13, 22, 0.95);
+      border-top: 1px solid var(--border-color);
+      padding: 3rem 0 2rem;
+      margin-top: 4rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr repeat(3, 1fr);
+      gap: 2.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .footer-brand p {
+      margin-top: 0.8rem;
+      max-width: 320px;
+      font-size: 0.85rem;
+    }
+    .footer-col h5 {
+      color: var(--text-main);
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .footer-col ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .footer-col a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+    .footer-col a:hover {
+      color: var(--accent-cyan);
+    }
+    .disclaimer-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      font-size: 0.78rem;
+      line-height: 1.5;
+      color: var(--text-dim);
+      text-align: center;
+    }
+
+    /* Print Styles for PDF Report */
+    @media print {
+      body {
+        background: #fff !important;
+        color: #000 !important;
+      }
+      .navbar, footer, .preset-buttons, .hero-actions, .nav-btn, .btn-primary, .btn-secondary, .toast-container {
+        display: none !important;
+      }
+      .card {
+        border: 1px solid #ccc !important;
+        box-shadow: none !important;
+        background: #fff !important;
+        color: #000 !important;
+        break-inside: avoid;
+      }
+      .gauge-score, .signal-title, .card-title {
+        color: #000 !important;
+      }
+      .signal-desc, .text-muted {
+        color: #444 !important;
+      }
+    }
+
+    /* Responsive Mobile Media Queries */
+    @media (max-width: 768px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        padding: 1.5rem 0;
+      }
+      .hero-title {
+        font-size: 2.2rem;
+      }
+      .nav-links {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--bg-surface);
+        border-bottom: 1px solid var(--border-color);
+        flex-direction: column;
+        padding: 1rem;
+        gap: 0.5rem;
+      }
+      .nav-links.active {
+        display: flex;
+      }
+      .mobile-menu-toggle {
+        display: block;
+      }
+      .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <a href="#" class="brand-logo" onclick="switchTab('dashboard')">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>FakeBazaar AI</span>
+        <span class="brand-badge">v1.0</span>
+      </a>
+
+      <button class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="Toggle Navigation">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <ul class="nav-links" id="navLinks">
+        <li><button class="nav-btn active" onclick="switchTab('dashboard')"><i class="fa-solid fa-chart-pie"></i> Dashboard</button></li>
+        <li><button class="nav-btn" onclick="switchTab('analyze')"><i class="fa-solid fa-magnifying-glass"></i> Analyze</button></li>
+        <li><button class="nav-btn" onclick="switchTab('compare')"><i class="fa-solid fa-code-compare"></i> Compare</button></li>
+        <li><button class="nav-btn" onclick="switchTab('history')"><i class="fa-solid fa-clock-rotate-left"></i> History</button></li>
+        <li><button class="nav-btn" onclick="switchTab('tips')"><i class="fa-solid fa-lightbulb"></i> Safety Tips</button></li>
+        <li><button class="nav-btn" onclick="switchTab('about')"><i class="fa-solid fa-circle-info"></i> About</button></li>
+      </ul>
+
+      <div class="nav-right-actions">
+        <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
+          <i class="fa-solid fa-moon" id="themeToggleIcon"></i>
+        </button>
+
+        <button class="nav-cta" onclick="switchTab('analyze')">
+          <i class="fa-solid fa-bolt"></i> Quick Scan
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+
+    <!-- 1. DASHBOARD / HERO SECTION -->
+    <section id="section-dashboard" class="page-section active">
+      <div class="hero-grid">
+        <div class="hero-content">
+          <div class="hero-tag">
+            <i class="fa-solid fa-microchip"></i> Heuristic AI Scam Detection Engine
+          </div>
+          <h1 class="hero-title">
+            Detect Suspicious Listings <span class="gradient-text">Before You Pay</span>
+          </h1>
+          <p class="hero-desc">
+            Instantly evaluate online products, seller credibility, price manipulation, fake review patterns, and domain safety signals using transparent local AI-style logic.
+          </p>
+          <div class="hero-actions">
+            <button class="btn-primary" onclick="switchTab('analyze')">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Analyze a Product
+            </button>
+            <button class="btn-secondary" onclick="loadDemoPreset(1)">
+              <i class="fa-solid fa-flask"></i> Try High Risk Demo
+            </button>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="scanner-header">
+            <div class="scanner-dots">
+              <div class="scanner-dot red"></div>
+              <div class="scanner-dot yellow"></div>
+              <div class="scanner-dot green"></div>
+            </div>
+            <div class="scanner-status"><i class="fa-solid fa-radar"></i> SCANNER ONLINE</div>
+          </div>
+          
+          <div class="mock-listing-card">
+            <div class="mock-img">
+              <i class="fa-solid fa-mobile-screen-button"></i>
+            </div>
+            <div class="mock-info">
+              <h4>Flagship Pro Smartphone X</h4>
+              <div class="mock-prices">
+                <span class="mock-price">₹4,999</span>
+                <span class="mock-mrp">₹49,999</span>
+                <span class="mock-badge">90% OFF</span>
+              </div>
+              <p style="font-size:0.75rem; color:var(--text-muted)">Seller: FastDeals_Store99 • ★ 1.8 (4 reviews)</p>
+            </div>
+          </div>
+
+          <div class="mock-signals">
+            <div class="signal-item">
+              <span><i class="fa-solid fa-triangle-exclamation" style="color:var(--risk-vhigh)"></i> Price Variance</span>
+              <span style="color:var(--risk-vhigh); font-weight:700;">+30 Risk</span>
+            </div>
+            <div class="signal-item">
+              <span><i class="fa-solid fa-user-xmark" style="color:var(--risk-vhigh)"></i> Seller Rating &lt; 2.0</span>
+              <span style="color:var(--risk-vhigh); font-weight:700;">+25 Risk</span>
+            </div>
+            <div class="signal-item">
+              <span><i class="fa-solid fa-lock" style="color:var(--risk-low)"></i> Standard Protocol (HTTPS)</span>
+              <span style="color:var(--risk-low); font-weight:700;">0 Risk</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats Dashboard -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fa-solid fa-clipboard-check"></i></div>
+          <div>
+            <div class="stat-value" id="statTotalScans">0</div>
+            <div class="stat-label">Total Analyses</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon red"><i class="fa-solid fa-shield-virus"></i></div>
+          <div>
+            <div class="stat-value" id="statHighRisk">0</div>
+            <div class="stat-label">High/Critical Flags</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fa-solid fa-shield-cat"></i></div>
+          <div>
+            <div class="stat-value" id="statLowRisk">0</div>
+            <div class="stat-label">Low Risk Verified</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon purple"><i class="fa-solid fa-gauge-high"></i></div>
+          <div>
+            <div class="stat-value" id="statAvgScore">0</div>
+            <div class="stat-label">Average Risk Index</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Scans Preview -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Recent Inspections</h3>
+          <button class="btn-secondary" style="padding:0.4rem 0.8rem; font-size:0.82rem;" onclick="switchTab('history')">
+            View All History
+          </button>
+        </div>
+        <div class="history-grid" id="dashboardHistoryGrid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. PRODUCT ANALYZER SECTION -->
+    <section id="section-analyze" class="page-section">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title"><i class="fa-solid fa-magnifying-glass-chart"></i> Product Inspection Terminal</h2>
+            <p class="text-muted" style="font-size:0.88rem; margin-top:0.2rem;">Enter product listing parameters to calculate composite risk scoring.</p>
+          </div>
+
+          <div class="preset-buttons">
+            <button class="btn-preset" onclick="loadDemoPreset(1)"><i class="fa-solid fa-skull"></i> High Risk Demo</button>
+            <button class="btn-preset" onclick="loadDemoPreset(2)"><i class="fa-solid fa-shield-heart"></i> Low Risk Demo</button>
+            <button class="btn-preset" onclick="loadDemoPreset(3)"><i class="fa-solid fa-triangle-exclamation"></i> Moderate Demo</button>
+            <button class="btn-preset" onclick="resetForm()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+          </div>
+        </div>
+
+        <form id="analyzerForm" onsubmit="handleAnalyzeSubmit(event)">
+          <div class="form-grid">
+
+            <div class="form-group full-width">
+              <label class="form-label">
+                <span>Product / Marketplace URL</span>
+                <span class="helper">Supports Amazon, Flipkart, Shopify, custom stores</span>
+              </label>
+              <input type="url" id="inputUrl" class="form-input" placeholder="https://example-shop.com/product/xyz-phone-deal" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Product Name / Title</label>
+              <input type="text" id="inputTitle" class="form-input" placeholder="e.g. Ultra HD Smart TV 65-inch 8K" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Selling Price (₹)</label>
+              <input type="number" id="inputPrice" class="form-input" min="0" step="any" placeholder="e.g. 4999" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Original / MRP Price (₹)</label>
+              <input type="number" id="inputMrp" class="form-input" min="0" step="any" placeholder="e.g. 49999">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Seller / Store Name</label>
+              <input type="text" id="inputSeller" class="form-input" placeholder="e.g. FastDeals_Store99">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Seller Rating (0 to 5.0)</label>
+              <input type="number" id="inputSellerRating" class="form-input" min="0" max="5" step="0.1" placeholder="e.g. 1.8">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Seller Total Reviews</label>
+              <input type="number" id="inputSellerReviews" class="form-input" min="0" placeholder="e.g. 8">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Product Rating (0 to 5.0)</label>
+              <input type="number" id="inputProductRating" class="form-input" min="0" max="5" step="0.1" placeholder="e.g. 4.9">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Product Reviews Count</label>
+              <input type="number" id="inputProductReviews" class="form-input" min="0" placeholder="e.g. 3">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Return / Refund Policy</label>
+              <select id="inputReturnPolicy" class="form-select">
+                <option value="no">No Returns / Non-Refundable ⚠️</option>
+                <option value="yes">7-30 Days Return / Replacement Available ✅</option>
+                <option value="unknown">Unclear / Not Specified</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Warranty Information</label>
+              <select id="inputWarranty" class="form-select">
+                <option value="no">No Warranty ⚠️</option>
+                <option value="yes">Brand / Seller Warranty Provided ✅</option>
+                <option value="unknown">Unclear / Not Mentioned</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Seller Contact Info Available</label>
+              <select id="inputContact" class="form-select">
+                <option value="no">No Email / Address / Support Info ⚠️</option>
+                <option value="yes">Full Address, Email & Phone Provided ✅</option>
+              </select>
+            </div>
+
+            <div class="form-group full-width">
+              <label class="form-label">Product Description & Promotional Text</label>
+              <textarea id="inputDescription" class="form-textarea" placeholder="Paste product description text to analyze pressure words, CAPSLOCK frequency, repetitive punctuation, or unrealistic promises..."></textarea>
+            </div>
+
+          </div>
+
+          <div style="margin-top: 1.8rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+            <button type="submit" class="btn-primary">
+              <i class="fa-solid fa-atom"></i> Run Heuristic Risk Engine
+            </button>
+            <button type="button" class="btn-secondary" onclick="resetForm()">
+              <i class="fa-solid fa-eraser"></i> Clear Form
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- RESULTS CONTAINER -->
+      <div id="resultsContainer" class="results-container">
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:1rem;">
+          <h2 class="card-title" style="font-size:1.5rem;"><i class="fa-solid fa-file-contract"></i> Risk Diagnostic Report</h2>
+          <div style="display:flex; gap:0.6rem;">
+            <button class="btn-secondary" onclick="copyAnalysisSummary()"><i class="fa-solid fa-copy"></i> Copy Summary</button>
+            <button class="btn-secondary" onclick="addToComparison()"><i class="fa-solid fa-plus"></i> Compare</button>
+            <button class="btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> Export / Print PDF</button>
+          </div>
+        </div>
+
+        <div class="results-grid">
+          
+          <!-- Score Gauge Card -->
+          <div class="score-card">
+            <span style="font-size:0.8rem; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px;">COMPOSITE RISK INDEX</span>
+            
+            <div class="gauge-wrapper">
+              <svg class="gauge-svg" viewBox="0 0 160 160">
+                <circle class="gauge-bg" cx="80" cy="80" r="70" />
+                <circle id="gaugeProgress" class="gauge-progress" cx="80" cy="80" r="70" />
+              </svg>
+              <div class="gauge-content">
+                <span id="resScoreNum" class="gauge-score">0</span>
+                <span class="gauge-max">/ 100</span>
+              </div>
+            </div>
+
+            <div id="resRiskBadge" class="risk-badge vhigh">VERY HIGH RISK</div>
+            <div id="resConfidence" class="confidence-tag">Confidence Score: 88%</div>
+
+            <div style="margin-top: 1rem; font-size: 0.78rem; color: var(--text-dim); border-top: 1px solid var(--border-color); padding-top: 0.8rem;">
+              <i class="fa-solid fa-circle-info"></i> Risk assessment — heuristic risk estimation, not proof of counterfeit status.
+            </div>
+
+            <!-- Category Sub-scores -->
+            <div class="sub-scores">
+              <div class="sub-score-item">
+                <div class="sub-score-header">
+                  <span>Price Signals</span>
+                  <span id="subPriceText">0%</span>
+                </div>
+                <div class="bar-bg"><div id="subPriceBar" class="bar-fill" style="background:var(--risk-vhigh)"></div></div>
+              </div>
+
+              <div class="sub-score-item">
+                <div class="sub-score-header">
+                  <span>Seller Reliability</span>
+                  <span id="subSellerText">0%</span>
+                </div>
+                <div class="bar-bg"><div id="subSellerBar" class="bar-fill" style="background:var(--risk-high)"></div></div>
+              </div>
+
+              <div class="sub-score-item">
+                <div class="sub-score-header">
+                  <span>Listing Language</span>
+                  <span id="subListingText">0%</span>
+                </div>
+                <div class="bar-bg"><div id="subListingBar" class="bar-fill" style="background:var(--risk-mod)"></div></div>
+              </div>
+
+              <div class="sub-score-item">
+                <div class="sub-score-header">
+                  <span>URL Security</span>
+                  <span id="subUrlText">0%</span>
+                </div>
+                <div class="bar-bg"><div id="subUrlBar" class="bar-fill" style="background:var(--accent-blue)"></div></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Signal Explanations & Advice -->
+          <div>
+            
+            <div class="card" style="padding:1.5rem; margin-bottom:1.5rem;">
+              <h4 style="font-size:1.05rem; margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem;">
+                <i class="fa-solid fa-lightbulb" style="color:var(--accent-cyan)"></i> Recommendation Summary
+              </h4>
+              <p id="resRecommendation" style="font-size:0.92rem; color:var(--text-muted);">
+                <!-- Populated by JS -->
+              </p>
+            </div>
+
+            <!-- URL Details Box -->
+            <div class="url-analysis-box" style="margin-bottom: 1.5rem;">
+              <h4 style="font-size:0.9rem; font-weight:700;"><i class="fa-solid fa-globe"></i> Domain & URL Security Signals</h4>
+              <div id="urlPills" class="url-pills">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
+            <!-- Flags breakdown -->
+            <h3 style="font-size:1.15rem; margin-bottom:1rem;"><i class="fa-solid fa-list-check"></i> Signal Impact Breakdown</h3>
+            <div id="signalsList" class="signals-list">
+              <!-- Signal Cards rendered by JS -->
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 3. PRODUCT SAFETY CHECKLIST SECTION -->
+    <section id="section-checklist" class="page-section">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title"><i class="fa-solid fa-clipboard-check"></i> Pre-Purchase Verification Checklist</h2>
+            <p class="text-muted" style="font-size:0.88rem;">Complete this mandatory 8-step physical verification audit before completing any payment.</p>
+          </div>
+        </div>
+
+        <div class="checklist-progress-wrapper">
+          <div class="checklist-progress-text">
+            <span>Safety Audit Progress</span>
+            <span id="checklistCount">0 / 8 Verified</span>
+          </div>
+          <div class="bar-bg" style="height:10px;">
+            <div id="checklistBar" class="bar-fill" style="background:linear-gradient(90deg, var(--accent-cyan), var(--risk-low)); width:0%;"></div>
+          </div>
+        </div>
+
+        <div class="checklist-grid" id="checklistContainer">
+          <!-- JS dynamic checklist -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. PRODUCT COMPARISON SECTION -->
+    <section id="section-compare" class="page-section">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title"><i class="fa-solid fa-code-compare"></i> Multi-Product Scam Matrix</h2>
+            <p class="text-muted" style="font-size:0.88rem;">Compare up to 3 saved listings side-by-side to highlight the safest shopping option.</p>
+          </div>
+          <button class="btn-secondary" onclick="clearComparison()"><i class="fa-solid fa-trash"></i> Reset Matrix</button>
+        </div>
+
+        <div id="compareContent">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. HISTORY SECTION -->
+    <section id="section-history" class="page-section">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Analysis History Log</h2>
+            <p class="text-muted" style="font-size:0.88rem;">All previous scans stored securely in your browser local storage.</p>
+          </div>
+          <button class="btn-secondary" style="color:var(--risk-vhigh);" onclick="clearAllHistory()"><i class="fa-solid fa-trash-can"></i> Clear All History</button>
+        </div>
+
+        <div class="history-toolbar">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="historySearch" class="form-input" placeholder="Search saved products or sellers..." oninput="renderHistoryPage()">
+          </div>
+          <select id="historyFilter" class="form-select" style="max-width:180px;" onchange="renderHistoryPage()">
+            <option value="all">All Risk Levels</option>
+            <option value="vhigh">Very High Risk</option>
+            <option value="high">High Risk</option>
+            <option value="moderate">Moderate Risk</option>
+            <option value="low">Low Risk</option>
+          </select>
+        </div>
+
+        <div class="history-grid" id="fullHistoryGrid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. SAFETY TIPS SECTION -->
+    <section id="section-tips" class="page-section">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title"><i class="fa-solid fa-shield-heart"></i> 10 Golden Rules for Safe Online Shopping</h2>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.25rem;">
+          <div class="stat-card" style="align-items:flex-start;">
+            <div class="stat-icon blue"><i class="fa-solid fa-scale-balanced"></i></div>
+            <div>
+              <h4 style="margin-bottom:0.3rem;">1. Spot Unrealistic Discounts</h4>
+              <p style="font-size:0.85rem; color:var(--text-muted);">If a brand new ₹80,000 iPhone is listed for ₹5,000, it is 99.9% guaranteed to be a counterfeit or payment scam.</p>
+            </div>
+          </div>
+
+          <div class="stat-card" style="align-items:flex-start;">
+            <div class="stat-icon purple"><i class="fa-solid fa-user-shield"></i></div>
+            <div>
+              <h4 style="margin-bottom:0.3rem;">2. Audit Seller History</h4>
+              <p style="font-size:0.85rem; color:var(--text-muted);">Check seller registration date and rating count. Brand new accounts with zero established feedback are high risk.</p>
+            </div>
+          </div>
+
+          <div class="stat-card" style="align-items:flex-start;">
+            <div class="stat-icon red"><i class="fa-solid fa-link-slash"></i></div>
+            <div>
+              <h4 style="margin-bottom:0.3rem;">3. Inspect Web Domain (URL)</h4>
+              <p style="font-size:0.85rem; color:var(--text-muted);">Verify the URL spelling carefully. Watch out for typosquatting like <code>amaz0n-cheap-deals.site</code> instead of official domains.</p>
+            </div>
+          </div>
+
+          <div class="stat-card" style="align-items:flex-start;">
+            <div class="stat-icon green"><i class="fa-solid fa-comments"></i></div>
+            <div>
+              <h4 style="margin-bottom:0.3rem;">4. Detect Bot Reviews</h4>
+              <p style="font-size:0.85rem; color:var(--text-muted);">Watch for dozens of generic 5-star reviews posted on the exact same date using identical phrases like "Great item original fast delivery".</p>
+            </div>
+          </div>
+
+          <div class="stat-card" style="align-items:flex-start;">
+            <div class="stat-icon blue"><i class="fa-solid fa-credit-card"></i></div>
+            <div>
+              <h4 style="margin-bottom:0.3rem;">5. Never Pay Off-Platform</h4>
+              <p style="font-size:0.85rem; color:var(--text-muted);">Never accept requests to wire direct bank transfers, UPI links, or crypto for marketplace purchases outside escrow protection.</p>
+            </div>
+          </div>
+
+          <div class="stat-card" style="align-items:flex-start;">
+            <div class="stat-icon purple"><i class="fa-solid fa-file-lines"></i></div>
+            <div>
+              <h4 style="margin-bottom:0.3rem;">6. Verify Return & Warranty</h4>
+              <p style="font-size:0.85rem; color:var(--text-muted);">Always read the fine print. Genuine retailers state explicit 7-14 day return periods and manufacturer warranty coverage.</p>
+            </div>
+          </div>
+
+          <div class="stat-card" style="align-items:flex-start;">
+            <div class="stat-icon red"><i class="fa-solid fa-bullhorn"></i></div>
+            <div>
+              <h4 style="margin-bottom:0.3rem;">7. Beware Urgency Language</h4>
+              <p style="font-size:0.85rem; color:var(--text-muted);">Scam listings frequently use artificial timers, CAPSLOCK text, and "ONLY 2 LEFT ACT NOW" pressure to prevent critical thinking.</p>
+            </div>
+          </div>
+
+          <div class="stat-card" style="align-items:flex-start;">
+            <div class="stat-icon green"><i class="fa-solid fa-truck-ramp-box"></i></div>
+            <div>
+              <h4 style="margin-bottom:0.3rem;">8. Choose Cash on Delivery</h4>
+              <p style="font-size:0.85rem; color:var(--text-muted);">Where available on unfamiliar stores, select Cash on Delivery (COD) or pay via credit card with buyer protection chargeback rights.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. ABOUT & PRIVACY SECTION -->
+    <section id="section-about" class="page-section">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title"><i class="fa-solid fa-circle-info"></i> About FakeBazaar AI</h2>
+        </div>
+        <div style="font-size:0.95rem; color:var(--text-muted); line-height:1.7;">
+          <p style="margin-bottom:1rem;">
+            <strong>FakeBazaar AI</strong> is a client-side cybersecurity tool engineered to help consumers evaluate online product listings, marketplace seller behavior, and domain characteristics before spending money.
+          </p>
+          
+          <h4 style="color:var(--text-main); margin:1.5rem 0 0.5rem;"><i class="fa-solid fa-lock"></i> Privacy & Zero-Server Guarantee</h4>
+          <p style="margin-bottom:1rem;">
+            This application runs 100% locally in your web browser. No product details, URLs, or personal data are ever transmitted to any remote server or external database. All scan history is stored exclusively in your browser's <code>localStorage</code>.
+          </p>
+
+          <h4 style="color:var(--text-main); margin:1.5rem 0 0.5rem;"><i class="fa-solid fa-shield-cat"></i> Methodology & Limitations</h4>
+          <p style="margin-bottom:1rem;">
+            Risk scores are calculated using a weighted multi-factor heuristic evaluation algorithm covering pricing variance, seller rating distribution, review density, listing linguistic markers, and URL structural indicators. It provides probabilistic risk estimation and does <strong>not</strong> serve as legal proof of counterfeit or legitimate product status.
+          </p>
+
+          <h4 style="color:var(--text-main); margin:2rem 0 1rem; font-size:1.2rem; display:flex; align-items:center; gap:0.6rem;">
+            <i class="fa-solid fa-users-gear" style="color:var(--accent-cyan);"></i> Project Leadership & Engineering Team
+          </h4>
+
+          <!-- Lead Showcase Banner: Raushan -->
+          <div style="background: linear-gradient(135deg, rgba(0,242,254,0.08), rgba(139,92,246,0.08)); border: 1px solid var(--border-highlight); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem; display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; box-shadow: var(--shadow-glow);">
+            <img src="raushan.jpg" alt="Raushan - Project Lead" style="width: 110px; height: 110px; border-radius: 16px; object-fit: cover; border: 3px solid var(--accent-cyan); box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);">
+            <div style="flex: 1; min-width: 240px;">
+              <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.3rem; flex-wrap: wrap;">
+                <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--text-main);">Raushan</h3>
+                <span style="background: rgba(0,242,254,0.15); color: var(--accent-cyan); border: 1px solid rgba(0,242,254,0.3); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
+                  <i class="fa-solid fa-crown"></i> Main Leading Role
+                </span>
+              </div>
+              <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 0.6rem;">
+                Chief Architect & Project Leader of FakeBazaar AI. Responsible for directing product conceptualization, rule-based risk heuristic engineering, core system architecture, and overall technical execution.
+              </p>
+              <div style="display: flex; gap: 1rem; font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600; flex-wrap: wrap;">
+                <span><i class="fa-solid fa-code"></i> System Architecture</span>
+                <span><i class="fa-solid fa-shield-halved"></i> Threat Logic</span>
+                <span><i class="fa-solid fa-diagram-project"></i> Project Management</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:1.25rem; margin-top:1rem;">
+            
+            <!-- Raushan (Lead Role Card) -->
+            <div style="background:var(--bg-surface); border:1px solid var(--border-highlight); border-radius:var(--radius-md); padding:1.25rem; position:relative; box-shadow:var(--shadow-glow);">
+              <div style="position:absolute; top:1rem; right:1rem; background:rgba(0,242,254,0.15); color:var(--accent-cyan); border:1px solid rgba(0,242,254,0.3); font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:4px; text-transform:uppercase; letter-spacing:0.5px;">
+                <i class="fa-solid fa-crown"></i> Project Lead
+              </div>
+              <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.75rem;">
+                <img src="raushan.jpg" alt="Raushan" style="width:52px; height:52px; border-radius:50%; object-fit:cover; border:2px solid var(--accent-cyan); box-shadow:0 0 10px rgba(0,242,254,0.4);">
+                <div>
+                  <h4 style="font-size:1.1rem; color:var(--text-main); font-weight:800;">Raushan</h4>
+                  <p style="font-size:0.8rem; color:var(--accent-cyan); font-weight:700;">Lead Developer & Architect</p>
+                </div>
+              </div>
+              <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+                Main leading role. Directs project vision, core system architecture, heuristic algorithm logic, and overall execution of FakeBazaar AI.
+              </p>
+            </div>
+
+            <!-- Gaurav -->
+            <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1.25rem;">
+              <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.75rem;">
+                <img src="gaurav.jpg" alt="Gaurav" style="width:52px; height:52px; border-radius:50%; object-fit:cover; border:2px solid var(--accent-purple); box-shadow:0 0 10px rgba(139,92,246,0.4);">
+                <div>
+                  <h4 style="font-size:1.1rem; color:var(--text-main); font-weight:800;">Gaurav</h4>
+                  <p style="font-size:0.8rem; color:var(--accent-purple); font-weight:700;">Frontend & AI Engine Developer</p>
+                </div>
+              </div>
+              <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+                Engineered core analytical workflows, DOM inspection engines, signal breakdown cards, and real-time score gauges.
+              </p>
+            </div>
+
+            <!-- Om Jee -->
+            <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1.25rem;">
+              <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.75rem;">
+                <img src="om_jee.jpg" alt="Om Jee" style="width:52px; height:52px; border-radius:50%; object-fit:cover; border:2px solid var(--risk-low); box-shadow:0 0 10px rgba(16,185,129,0.4);">
+                <div>
+                  <h4 style="font-size:1.1rem; color:var(--text-main); font-weight:800;">Om Jee</h4>
+                  <p style="font-size:0.8rem; color:var(--risk-low); font-weight:700;">Security & Risk Specialist</p>
+                </div>
+              </div>
+              <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+                Designed threat scoring weights, merchant credibility signals, URL vulnerability checks, and domain safety signatures.
+              </p>
+            </div>
+
+            <!-- Divyank Raj -->
+            <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1.25rem;">
+              <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.75rem;">
+                <img src="divyank.jpg" alt="Divyank Raj" style="width:52px; height:52px; border-radius:50%; object-fit:cover; border:2px solid var(--risk-mod); box-shadow:0 0 10px rgba(245,158,11,0.4);">
+                <div>
+                  <h4 style="font-size:1.1rem; color:var(--text-main); font-weight:800;">Divyank Raj</h4>
+                  <p style="font-size:0.8rem; color:var(--risk-mod); font-weight:700;">UI/UX & Quality Assurance</p>
+                </div>
+              </div>
+              <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+                Crafted the responsive dark cybersecurity aesthetic, visual scanner animations, multi-product comparison matrix, and QA testing.
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SCANNING ANIMATION MODAL -->
+  <div class="modal-overlay" id="scannerModal">
+    <div class="modal-card">
+      <div class="scanner-modal-body">
+        <div class="radar-spinner"></div>
+        <h3 style="font-size:1.3rem; margin-bottom:0.4rem;">Executing AI Signal Matrix</h3>
+        <p style="color:var(--text-muted); font-size:0.85rem;">Evaluating listing data against 24 cybersecurity & trust heuristics...</p>
+        <div id="scanStageText" class="scan-stage-text">&gt; Initializing local evaluation engine...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="brand-logo">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>FakeBazaar AI</span>
+          </div>
+          <p>Smart shopping starts with transparent signal verification. Protect your hard-earned money from scam listings.</p>
+        </div>
+
+        <div class="footer-col">
+          <h5>Navigation</h5>
+          <ul>
+            <li><a href="#" onclick="switchTab('dashboard')">Dashboard</a></li>
+            <li><a href="#" onclick="switchTab('analyze')">Product Inspection</a></li>
+            <li><a href="#" onclick="switchTab('compare')">Comparison Matrix</a></li>
+            <li><a href="#" onclick="switchTab('history')">Scan History</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h5>Resources</h5>
+          <ul>
+            <li><a href="#" onclick="switchTab('checklist')">Safety Checklist</a></li>
+            <li><a href="#" onclick="switchTab('tips')">10 Golden Rules</a></li>
+            <li><a href="#" onclick="switchTab('about')">Methodology</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h5>Privacy</h5>
+          <ul>
+            <li><a href="#" onclick="clearAllHistory()">Clear Local Data</a></li>
+            <li><a href="#" onclick="switchTab('about')">Zero-Server Policy</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="disclaimer-box">
+        <strong>Disclaimer:</strong> FakeBazaar AI provides automated risk assessment based on available listing signals. It does not guarantee that a product is genuine or counterfeit. Always verify sellers independently before purchasing.
+      </div>
+    </div>
+  </footer>
+
+  <!-- JAVASCRIPT LOGIC ENGINE -->
+  <script>
+    /* ==========================================================================
+       1. GLOBAL STATE & STORAGE MANAGEMENT
+       ========================================================================== */
+    const STORAGE_KEY = 'fakebazaar_scans_v1';
+    let scanHistory = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    let currentAnalysis = null;
+    let comparisonList = [];
+
+    // Pre-defined Checklist Items
+    const CHECKLIST_ITEMS = [
+      { id: 1, text: "Verified official brand website & domain match" },
+      { id: 2, text: "Compared price across at least 2 major marketplaces" },
+      { id: 3, text: "Confirmed seller rating is above 4.0 stars with >50 reviews" },
+      { id: 4, text: "Checked return policy is clearly stated (minimum 7 days)" },
+      { id: 5, text: "Verified manufacturer or seller warranty terms" },
+      { id: 6, text: "Reviewed independent 1-star & 2-star feedback" },
+      { id: 7, text: "Ensured payment method offers buyer protection (Cards/COD)" },
+      { id: 8, text: "Verified seller support email/phone & address details" }
+    ];
+    let checklistState = {};
+
+    /* ==========================================================================
+       2. INITIALIZATION & NAVIGATION
+       ========================================================================== */
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      renderDashboardStats();
+      renderDashboardHistory();
+      renderChecklist();
+      renderComparisonTable();
+
+      // Mobile Menu Toggle
+      const mobileBtn = document.getElementById('mobileMenuBtn');
+      const navLinks = document.getElementById('navLinks');
+      if (mobileBtn) {
+        mobileBtn.addEventListener('click', () => {
+          navLinks.classList.toggle('active');
+        });
+      }
+    });
+
+    /* Theme Toggle Functions */
+    function initTheme() {
+      const savedTheme = localStorage.getItem('fakebazaar_theme') || 'dark';
+      if (savedTheme === 'light') {
+        document.body.classList.add('light-mode');
+        updateThemeIcon(true);
+      }
+    }
+
+    function toggleTheme() {
+      const isLight = document.body.classList.toggle('light-mode');
+      const theme = isLight ? 'light' : 'dark';
+      localStorage.setItem('fakebazaar_theme', theme);
+      updateThemeIcon(isLight);
+      showToast(`Switched to ${isLight ? 'Light' : 'Dark'} Mode`);
+    }
+
+    function updateThemeIcon(isLight) {
+      const icon = document.getElementById('themeToggleIcon');
+      if (icon) {
+        icon.className = isLight ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+      }
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+
+      const targetSec = document.getElementById(`section-${tabId}`);
+      if (targetSec) targetSec.classList.add('active');
+
+      // Update Nav Buttons
+      const btns = document.querySelectorAll('.nav-btn');
+      btns.forEach(btn => {
+        if (btn.getAttribute('onclick')?.includes(tabId)) {
+          btn.classList.add('active');
+        }
+      });
+
+      // Close mobile nav
+      document.getElementById('navLinks').classList.remove('active');
+
+      if (tabId === 'history') renderHistoryPage();
+      if (tabId === 'dashboard') { renderDashboardStats(); renderDashboardHistory(); }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--accent-cyan);"></i> <span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    /* ==========================================================================
+       3. DEMO PRESETS
+       ========================================================================== */
+    const DEMO_PRESETS = {
+      1: {
+        url: "http://192.168.1.1/super-discount-cheap-tv-buy-now.shop",
+        title: "Ultra HD Smart TV 65-inch 8K - 90% OFF LIMITED STOCK!!!",
+        price: 4999,
+        mrp: 49999,
+        seller: "FastDeals99_SuperStore",
+        sellerRating: 1.8,
+        sellerReviews: 4,
+        productRating: 5.0,
+        productReviews: 2,
+        returnPolicy: "no",
+        warranty: "no",
+        contact: "no",
+        description: "HURRY BUY NOW! 100% ORIGINAL GENUINE BRAND NEW TV. CHEAPEST PRICE GUARANTEED CASH ONLY NO RETURN LIMITED TIME DEAL ACT FAST!!!"
+      },
+      2: {
+        url: "https://www.amazon.in/dp/B09XS7JWHH",
+        title: "Sony WH-1000XM5 Wireless Noise Canceling Headphones",
+        price: 24990,
+        mrp: 29990,
+        seller: "Sony Official Electronics Store",
+        sellerRating: 4.8,
+        sellerReviews: 1850,
+        productRating: 4.6,
+        productReviews: 1420,
+        returnPolicy: "yes",
+        warranty: "yes",
+        contact: "yes",
+        description: "Industry leading noise canceling with two processors and 8 microphones. Magnificent sound quality with new Integrated Processor V1. Up to 30-hour battery life."
+      },
+      3: {
+        url: "https://fashionbazaar-deals.co.in/product/designer-bag",
+        title: "Luxury Designer Leather Handbag Genuine Edition",
+        price: 1499,
+        mrp: 8999,
+        seller: "FashionBazaar_India",
+        sellerRating: 3.4,
+        sellerReviews: 22,
+        productRating: 4.2,
+        productReviews: 9,
+        returnPolicy: "yes",
+        warranty: "no",
+        contact: "no",
+        description: "Premium leather handbag. Perfect gift. Limited stock available at special discounted rate. Hurry up!"
+      }
+    };
+
+    function loadDemoPreset(id) {
+      const data = DEMO_PRESETS[id];
+      if (!data) return;
+
+      switchTab('analyze');
+      document.getElementById('inputUrl').value = data.url;
+      document.getElementById('inputTitle').value = data.title;
+      document.getElementById('inputPrice').value = data.price;
+      document.getElementById('inputMrp').value = data.mrp;
+      document.getElementById('inputSeller').value = data.seller;
+      document.getElementById('inputSellerRating').value = data.sellerRating;
+      document.getElementById('inputSellerReviews').value = data.sellerReviews;
+      document.getElementById('inputProductRating').value = data.productRating;
+      document.getElementById('inputProductReviews').value = data.productReviews;
+      document.getElementById('inputReturnPolicy').value = data.returnPolicy;
+      document.getElementById('inputWarranty').value = data.warranty;
+      document.getElementById('inputContact').value = data.contact;
+      document.getElementById('inputDescription').value = data.description;
+
+      showToast(`Loaded Demo Preset #${id}`);
+    }
+
+    function resetForm() {
+      document.getElementById('analyzerForm').reset();
+      document.getElementById('resultsContainer').style.display = 'none';
+      showToast('Form cleared');
+    }
+
+    /* ==========================================================================
+       4. HEURISTIC RISK DETECTION ENGINE
+       ========================================================================== */
+    function analyzeListingData(input) {
+      let riskScore = 0;
+      let signals = [];
+
+      let priceScore = 0;
+      let sellerScore = 0;
+      let listingScore = 0;
+      let urlScore = 0;
+      let trustBonus = 0;
+
+      // ----------------------------------------------------
+      // A. PRICE SIGNAL ANALYSIS
+      // ----------------------------------------------------
+      const price = parseFloat(input.price) || 0;
+      const mrp = parseFloat(input.mrp) || 0;
+
+      if (mrp > 0 && price > 0) {
+        const discount = ((mrp - price) / mrp) * 100;
+        if (discount >= 85) {
+          priceScore += 35;
+          signals.push({
+            type: 'critical',
+            title: 'Extremely Suspicious Discount (>85%)',
+            desc: `Listing claims a ${discount.toFixed(1)}% discount. Luxury/electronics items discounted by over 80% are primary indicators of counterfeit goods or non-delivery scams.`,
+            impact: '+35 Risk'
+          });
+        } else if (discount >= 65) {
+          priceScore += 20;
+          signals.push({
+            type: 'warning',
+            title: 'High Price Discount (65%-84%)',
+            desc: `Significant price drop of ${discount.toFixed(1)}% compared to original MRP. Verify item authenticity.`,
+            impact: '+20 Risk'
+          });
+        } else {
+          signals.push({
+            type: 'safe',
+            title: 'Normal Price Variance',
+            desc: `Discount of ${discount.toFixed(1)}% falls within realistic commercial promotion boundaries.`,
+            impact: '0 Risk'
+          });
+        }
+      }
+
+      if (price < 150 && input.title.toLowerCase().match(/(iphone|macbook|laptop|smart tv|sony|rolex)/i)) {
+        priceScore += 25;
+        signals.push({
+          type: 'critical',
+          title: 'Unrealistically Low Nominal Price',
+          desc: 'High-value premium tech or luxury keywords listed for negligible price amounts.',
+          impact: '+25 Risk'
+        });
+      }
+
+      // ----------------------------------------------------
+      // B. SELLER SIGNAL ANALYSIS
+      // ----------------------------------------------------
+      const sellerRating = parseFloat(input.sellerRating) || 0;
+      const sellerReviews = parseInt(input.sellerReviews) || 0;
+      const sellerName = (input.seller || '').toLowerCase();
+
+      if (sellerRating > 0) {
+        if (sellerRating < 2.5) {
+          sellerScore += 25;
+          signals.push({
+            type: 'critical',
+            title: 'Poor Seller Rating (<2.5 Stars)',
+            desc: `Seller rating of ${sellerRating} indicates strong prior customer dissatisfaction or dispute history.`,
+            impact: '+25 Risk'
+          });
+        } else if (sellerRating < 3.8) {
+          sellerScore += 12;
+          signals.push({
+            type: 'warning',
+            title: 'Sub-Par Seller Rating',
+            desc: `Seller rating of ${sellerRating} is below consumer trust threshold.`,
+            impact: '+12 Risk'
+          });
+        } else if (sellerRating >= 4.5 && sellerReviews > 50) {
+          trustBonus += 12;
+          signals.push({
+            type: 'safe',
+            title: 'Established High Seller Reputation',
+            desc: `Seller maintains a solid ${sellerRating} star rating backed by ${sellerReviews} customer reviews.`,
+            impact: '-12 Risk'
+          });
+        }
+      }
+
+      if (sellerReviews < 10 && sellerReviews >= 0) {
+        sellerScore += 18;
+        signals.push({
+          type: 'suspicious',
+          title: 'Very Low Seller Review Volume',
+          desc: `Seller has only ${sellerReviews} total reviews. New or unverified merchant profiles carry higher risk.`,
+          impact: '+18 Risk'
+        });
+      }
+
+      if (sellerName.includes('deal') || sellerName.includes('cheap') || sellerName.includes('store99') || sellerName.includes('discount')) {
+        sellerScore += 8;
+        signals.push({
+          type: 'warning',
+          title: 'Suspicious Generic Merchant Name Pattern',
+          desc: `Seller name "${input.seller}" incorporates high-pressure promotional keywords.`,
+          impact: '+8 Risk'
+        });
+      }
+
+      // ----------------------------------------------------
+      // C. LISTING & TEXT ANALYSIS
+      // ----------------------------------------------------
+      const fullText = `${input.title} ${input.description}`.toLowerCase();
+      const urgencyWords = ['hurry', 'limited time', 'act fast', '100% original', 'cheap', 'cash only', 'no return', 'guaranteed replica', 'steal deal'];
+      let foundUrgency = urgencyWords.filter(w => fullText.includes(w));
+
+      if (foundUrgency.length >= 2) {
+        listingScore += 18;
+        signals.push({
+          type: 'suspicious',
+          title: 'High Pressure / Manipulative Phrasing',
+          desc: `Listing contains pressure keywords: "${foundUrgency.join(', ')}". Fraudulent sellers use high urgency to bypass buyer research.`,
+          impact: '+18 Risk'
+        });
+      }
+
+      // Capslock Ratio check
+      const rawText = `${input.title} ${input.description}`;
+      const uppercaseCount = (rawText.match(/[A-Z]/g) || []).length;
+      if (rawText.length > 20 && (uppercaseCount / rawText.length) > 0.35) {
+        listingScore += 10;
+        signals.push({
+          type: 'warning',
+          title: 'Excessive Capitalization (CAPSLOCK)',
+          desc: 'Over 35% of listing text is in uppercase letters, indicative of spam or clickbait practices.',
+          impact: '+10 Risk'
+        });
+      }
+
+      // ----------------------------------------------------
+      // D. TRUST POLICIES (MITIGATORS)
+      // ----------------------------------------------------
+      if (input.returnPolicy === 'no') {
+        listingScore += 15;
+        signals.push({
+          type: 'critical',
+          title: 'No Return / Non-Refundable Policy',
+          desc: 'Refusal to accept returns eliminates buyer recourse in case of fake or damaged items.',
+          impact: '+15 Risk'
+        });
+      } else if (input.returnPolicy === 'yes') {
+        trustBonus += 10;
+        signals.push({
+          type: 'safe',
+          title: 'Buyer Return Protection Available',
+          desc: 'Seller supports product return/refund, lowering transaction risk.',
+          impact: '-10 Risk'
+        });
+      }
+
+      if (input.warranty === 'no') {
+        listingScore += 8;
+        signals.push({
+          type: 'warning',
+          title: 'Missing Warranty Coverage',
+          desc: 'Item carries no manufacturer or merchant warranty.',
+          impact: '+8 Risk'
+        });
+      } else if (input.warranty === 'yes') {
+        trustBonus += 8;
+        signals.push({
+          type: 'safe',
+          title: 'Warranty Guarantee Offered',
+          desc: 'Official warranty info specified for product.',
+          impact: '-8 Risk'
+        });
+      }
+
+      if (input.contact === 'no') {
+        sellerScore += 12;
+        signals.push({
+          type: 'suspicious',
+          title: 'Missing Merchant Contact / Address Information',
+          desc: 'Lack of transparent physical address or customer service details.',
+          impact: '+12 Risk'
+        });
+      }
+
+      // ----------------------------------------------------
+      // E. URL SECURITY ANALYSIS
+      // ----------------------------------------------------
+      const urlAnalysis = analyzeUrlStructure(input.url);
+      urlScore += urlAnalysis.riskAddition;
+      signals.push(...urlAnalysis.signals);
+
+      // ----------------------------------------------------
+      // F. COMPOSITE SCORE CALCULATION
+      // ----------------------------------------------------
+      riskScore = Math.max(0, Math.min(100, priceScore + sellerScore + listingScore + urlScore - trustBonus));
+
+      // Calculate confidence based on input completeness
+      let filledFields = [input.url, input.title, input.price, input.seller, input.sellerRating, input.description].filter(Boolean).length;
+      let confidence = Math.min(95, 55 + (filledFields * 7));
+
+      return {
+        score: Math.round(riskScore),
+        confidence,
+        subScores: {
+          price: Math.min(100, priceScore * 2.5),
+          seller: Math.min(100, sellerScore * 2.5),
+          listing: Math.min(100, listingScore * 2.5),
+          url: Math.min(100, urlScore * 2.5)
+        },
+        signals,
+        urlAnalysis,
+        input
+      };
+    }
+
+    function analyzeUrlStructure(urlStr) {
+      let riskAddition = 0;
+      let signals = [];
+      let urlPills = [];
+
+      try {
+        const parsed = new URL(urlStr);
+        
+        // Protocol check
+        if (parsed.protocol !== 'https:') {
+          riskAddition += 25;
+          urlPills.push({ type: 'red', text: 'HTTP (Unencrypted)' });
+          signals.push({
+            type: 'critical',
+            title: 'Insecure Protocol (No HTTPS)',
+            desc: 'Website lacks SSL encryption. Shopping on non-HTTPS sites exposes checkout data to interception.',
+            impact: '+25 Risk'
+          });
+        } else {
+          urlPills.push({ type: 'green', text: 'HTTPS Secure' });
+        }
+
+        // IP Hostname check
+        if (/^(\d{1,3}\.){3}\d{1,3}$/.test(parsed.hostname)) {
+          riskAddition += 30;
+          urlPills.push({ type: 'red', text: 'IP Address URL' });
+          signals.push({
+            type: 'critical',
+            title: 'Direct IP Address Hostname',
+            desc: `Store uses raw IP address (${parsed.hostname}) instead of a registered domain name. Major red flag.`,
+            impact: '+30 Risk'
+          });
+        }
+
+        // Suspicious TLD check
+        const suspiciousTLDs = ['.shop', '.xyz', '.top', '.tk', '.ml', '.club', '.site', '.work', '.discount', '.store'];
+        const matchedTLD = suspiciousTLDs.find(tld => parsed.hostname.endsWith(tld));
+        if (matchedTLD) {
+          riskAddition += 15;
+          urlPills.push({ type: 'yellow', text: `Suspicious TLD (${matchedTLD})` });
+          signals.push({
+            type: 'warning',
+            title: 'High-Risk Domain Extension',
+            desc: `Domain uses "${matchedTLD}" TLD, which is frequently used for disposable spam sites due to low registration cost.`,
+            impact: '+15 Risk'
+          });
+        } else {
+          urlPills.push({ type: 'green', text: 'Standard Domain TLD' });
+        }
+
+        // Known trusted domains
+        const trustedDomains = ['amazon.in', 'amazon.com', 'flipkart.com', 'myntra.com', 'ebay.com', 'croma.com', 'tatacliq.com'];
+        if (trustedDomains.some(d => parsed.hostname.includes(d))) {
+          riskAddition -= 15;
+          urlPills.push({ type: 'green', text: 'Verified Major Marketplace' });
+        }
+
+      } catch (e) {
+        riskAddition += 15;
+        urlPills.push({ type: 'red', text: 'Invalid URL Format' });
+      }
+
+      return { riskAddition, signals, urlPills };
+    }
+
+    /* ==========================================================================
+       5. FORM SUBMISSION & SCANNING ANIMATION
+       ========================================================================== */
+    function handleAnalyzeSubmit(e) {
+      e.preventDefault();
+
+      const input = {
+        url: document.getElementById('inputUrl').value.trim(),
+        title: document.getElementById('inputTitle').value.trim(),
+        price: document.getElementById('inputPrice').value,
+        mrp: document.getElementById('inputMrp').value,
+        seller: document.getElementById('inputSeller').value.trim(),
+        sellerRating: document.getElementById('inputSellerRating').value,
+        sellerReviews: document.getElementById('inputSellerReviews').value,
+        productRating: document.getElementById('inputProductRating').value,
+        productReviews: document.getElementById('inputProductReviews').value,
+        returnPolicy: document.getElementById('inputReturnPolicy').value,
+        warranty: document.getElementById('inputWarranty').value,
+        contact: document.getElementById('inputContact').value,
+        description: document.getElementById('inputDescription').value.trim()
+      };
+
+      // Open Animation Modal
+      const modal = document.getElementById('scannerModal');
+      const stageText = document.getElementById('scanStageText');
+      modal.classList.add('active');
+
+      const stages = [
+        "> Reading input parameters & verifying URL scheme...",
+        "> Analyzing price discount variance & nominal values...",
+        "> Evaluating seller rating distribution & review volume...",
+        "> Inspecting description text for pressure keywords...",
+        "> Querying domain trust & TLD vulnerability metrics...",
+        "> Synthesizing composite heuristic risk index..."
+      ];
+
+      let idx = 0;
+      const interval = setInterval(() => {
+        if (idx < stages.length) {
+          stageText.innerText = stages[idx];
+          idx++;
+        } else {
+          clearInterval(interval);
+          modal.classList.remove('active');
+          
+          // Execute Analysis & Render
+          currentAnalysis = analyzeListingData(input);
+          saveAnalysisToHistory(currentAnalysis);
+          renderAnalysisResults(currentAnalysis);
+          showToast('Inspection completed!');
+        }
+      }, 300);
+    }
+
+    /* ==========================================================================
+       6. RENDER ANALYSIS RESULTS
+       ========================================================================== */
+    function renderAnalysisResults(res) {
+      const container = document.getElementById('resultsContainer');
+      container.style.display = 'block';
+
+      // Score Gauge
+      const score = res.score;
+      document.getElementById('resScoreNum').innerText = score;
+
+      const progressCircle = document.getElementById('gaugeProgress');
+      const maxOffset = 440;
+      const offset = maxOffset - (maxOffset * score / 100);
+      progressCircle.style.strokeDashoffset = offset;
+
+      // Risk Badge & Color
+      const badge = document.getElementById('resRiskBadge');
+      badge.className = 'risk-badge';
+
+      let riskCategory = 'Low Risk';
+      let strokeColor = 'var(--risk-low)';
+
+      if (score >= 75) {
+        badge.classList.add('vhigh');
+        badge.innerText = 'VERY HIGH RISK';
+        strokeColor = 'var(--risk-vhigh)';
+        riskCategory = 'Very High Risk';
+      } else if (score >= 50) {
+        badge.classList.add('high');
+        badge.innerText = 'HIGH RISK';
+        strokeColor = 'var(--risk-high)';
+        riskCategory = 'High Risk';
+      } else if (score >= 25) {
+        badge.classList.add('moderate');
+        badge.innerText = 'MODERATE RISK';
+        strokeColor = 'var(--risk-mod)';
+        riskCategory = 'Moderate Risk';
+      } else {
+        badge.classList.add('low');
+        badge.innerText = 'LOW RISK';
+        strokeColor = 'var(--risk-low)';
+        riskCategory = 'Low Risk';
+      }
+      progressCircle.style.stroke = strokeColor;
+
+      document.getElementById('resConfidence').innerText = `Confidence Metric: ${res.confidence}%`;
+
+      // Sub-scores
+      document.getElementById('subPriceBar').style.width = `${res.subScores.price}%`;
+      document.getElementById('subPriceText').innerText = `${Math.round(res.subScores.price)}%`;
+
+      document.getElementById('subSellerBar').style.width = `${res.subScores.seller}%`;
+      document.getElementById('subSellerText').innerText = `${Math.round(res.subScores.seller)}%`;
+
+      document.getElementById('subListingBar').style.width = `${res.subScores.listing}%`;
+      document.getElementById('subListingText').innerText = `${Math.round(res.subScores.listing)}%`;
+
+      document.getElementById('subUrlBar').style.width = `${res.subScores.url}%`;
+      document.getElementById('subUrlText').innerText = `${Math.round(res.subScores.url)}%`;
+
+      // Recommendation Text
+      const recBox = document.getElementById('resRecommendation');
+      if (score >= 75) {
+        recBox.innerHTML = `⚠️ <strong>Strong Warning:</strong> This listing presents critical risk indicators. We strongly recommend <strong>avoiding purchase</strong> from this merchant or platform until identity and buyer protection are verified.`;
+      } else if (score >= 50) {
+        recBox.innerHTML = `⚡ <strong>Proceed With Caution:</strong> Several warning flags were identified (price or seller profile). Ensure you select Cash on Delivery or pay via card with dispute coverage.`;
+      } else {
+        recBox.innerHTML = `✅ <strong>Standard Trust Profile:</strong> Listing metrics fall within expected normal parameters. Always complete standard pre-purchase checks before paying.`;
+      }
+
+      // Render URL Pills
+      const pillsContainer = document.getElementById('urlPills');
+      pillsContainer.innerHTML = res.urlAnalysis.urlPills.map(p => {
+        let style = 'background:rgba(255,255,255,0.05); color:var(--text-muted);';
+        if (p.type === 'green') style = 'background:var(--risk-low-bg); color:var(--risk-low);';
+        if (p.type === 'yellow') style = 'background:var(--risk-mod-bg); color:var(--risk-mod);';
+        if (p.type === 'red') style = 'background:var(--risk-vhigh-bg); color:var(--risk-vhigh);';
+        return `<span class="url-pill" style="${style}">${p.text}</span>`;
+      }).join('');
+
+      // Render Signal Cards
+      const signalsList = document.getElementById('signalsList');
+      signalsList.innerHTML = res.signals.map(s => {
+        let iconClass = 'fa-shield-halved';
+        if (s.type === 'critical') iconClass = 'fa-skull-crossbones';
+        if (s.type === 'suspicious') iconClass = 'fa-triangle-exclamation';
+        if (s.type === 'warning') iconClass = 'fa-circle-exclamation';
+        if (s.type === 'safe') iconClass = 'fa-check';
+
+        const isPlus = s.impact.includes('+');
+        return `
+          <div class="signal-card">
+            <div class="signal-badge-icon ${s.type}">
+              <i class="fa-solid ${iconClass}"></i>
+            </div>
+            <div class="signal-content">
+              <div class="signal-title-row">
+                <span class="signal-title">${s.title}</span>
+                <span class="signal-impact ${isPlus ? 'plus' : 'minus'}">${s.impact}</span>
+              </div>
+              <p class="signal-desc">${s.desc}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    /* ==========================================================================
+       7. LOCALSTORAGE & HISTORY MANAGEMENT
+       ========================================================================== */
+    function saveAnalysisToHistory(analysis) {
+      const item = {
+        id: Date.now(),
+        date: new Date().toLocaleString(),
+        title: analysis.input.title || 'Untitled Product',
+        price: analysis.input.price,
+        seller: analysis.input.seller || 'Unknown Seller',
+        score: analysis.score,
+        analysis
+      };
+
+      scanHistory.unshift(item);
+      if (scanHistory.length > 50) scanHistory.pop(); // keep last 50
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(scanHistory));
+
+      renderDashboardStats();
+      renderDashboardHistory();
+    }
+
+    function renderDashboardStats() {
+      document.getElementById('statTotalScans').innerText = scanHistory.length;
+      const highRisk = scanHistory.filter(s => s.score >= 50).length;
+      const lowRisk = scanHistory.filter(s => s.score < 25).length;
+      document.getElementById('statHighRisk').innerText = highRisk;
+      document.getElementById('statLowRisk').innerText = lowRisk;
+
+      if (scanHistory.length > 0) {
+        const sum = scanHistory.reduce((acc, curr) => acc + curr.score, 0);
+        document.getElementById('statAvgScore').innerText = Math.round(sum / scanHistory.length);
+      } else {
+        document.getElementById('statAvgScore').innerText = '0';
+      }
+    }
+
+    function renderDashboardHistory() {
+      const grid = document.getElementById('dashboardHistoryGrid');
+      if (!grid) return;
+
+      if (scanHistory.length === 0) {
+        grid.innerHTML = `<p style="grid-column:1/-1; color:var(--text-dim); text-align:center; padding:1.5rem;">No product inspections stored yet. Run your first analysis above!</p>`;
+        return;
+      }
+
+      grid.innerHTML = scanHistory.slice(0, 3).map(item => createHistoryCardHtml(item)).join('');
+    }
+
+    function renderHistoryPage() {
+      const grid = document.getElementById('fullHistoryGrid');
+      const search = (document.getElementById('historySearch')?.value || '').toLowerCase();
+      const filter = document.getElementById('historyFilter')?.value || 'all';
+
+      let filtered = scanHistory.filter(item => {
+        const matchesSearch = item.title.toLowerCase().includes(search) || item.seller.toLowerCase().includes(search);
+        let matchesFilter = true;
+        if (filter === 'vhigh') matchesFilter = item.score >= 75;
+        if (filter === 'high') matchesFilter = item.score >= 50 && item.score < 75;
+        if (filter === 'moderate') matchesFilter = item.score >= 25 && item.score < 50;
+        if (filter === 'low') matchesFilter = item.score < 25;
+        return matchesSearch && matchesFilter;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<p style="grid-column:1/-1; color:var(--text-dim); text-align:center; padding:2rem;">No matching history logs found.</p>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(item => createHistoryCardHtml(item, true)).join('');
+    }
+
+    function createHistoryCardHtml(item, showDelete = false) {
+      let badgeClass = 'low';
+      if (item.score >= 75) badgeClass = 'vhigh';
+      else if (item.score >= 50) badgeClass = 'high';
+      else if (item.score >= 25) badgeClass = 'moderate';
+
+      return `
+        <div class="history-card" onclick="reopenHistoryItem(${item.id})">
+          <div class="history-card-header">
+            <div>
+              <div class="history-title">${item.title}</div>
+              <div class="history-date"><i class="fa-regular fa-clock"></i> ${item.date}</div>
+            </div>
+            <span class="risk-badge ${badgeClass}" style="font-size:0.7rem; padding:2px 8px;">${item.score}/100</span>
+          </div>
+          <div class="history-details">
+            <span><i class="fa-solid fa-store"></i> ${item.seller}</span>
+            <span style="font-weight:700; color:var(--text-main);">₹${item.price}</span>
+          </div>
+          ${showDelete ? `<button style="position:absolute; bottom:8px; right:8px; background:none; border:none; color:var(--text-dim); cursor:pointer;" onclick="event.stopPropagation(); deleteHistoryItem(${item.id})"><i class="fa-solid fa-trash"></i></button>` : ''}
+        </div>
+      `;
+    }
+
+    function reopenHistoryItem(id) {
+      const found = scanHistory.find(i => i.id === id);
+      if (found) {
+        currentAnalysis = found.analysis;
+        switchTab('analyze');
+        renderAnalysisResults(found.analysis);
+        showToast('Loaded saved scan item');
+      }
+    }
+
+    function deleteHistoryItem(id) {
+      scanHistory = scanHistory.filter(i => i.id !== id);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(scanHistory));
+      renderHistoryPage();
+      renderDashboardStats();
+      renderDashboardHistory();
+      showToast('Item removed from history');
+    }
+
+    function clearAllHistory() {
+      if (confirm('Are you sure you want to clear all analysis history?')) {
+        scanHistory = [];
+        localStorage.removeItem(STORAGE_KEY);
+        renderHistoryPage();
+        renderDashboardStats();
+        renderDashboardHistory();
+        showToast('All local scan history cleared');
+      }
+    }
+
+    /* ==========================================================================
+       8. CHECKLIST FUNCTIONALITY
+       ========================================================================== */
+    function renderChecklist() {
+      const container = document.getElementById('checklistContainer');
+      if (!container) return;
+
+      container.innerHTML = CHECKLIST_ITEMS.map(item => {
+        const isChecked = checklistState[item.id] || false;
+        return `
+          <div class="check-item ${isChecked ? 'checked' : ''}" onclick="toggleChecklist(${item.id})">
+            <div class="checkbox-custom">
+              ${isChecked ? '<i class="fa-solid fa-check"></i>' : ''}
+            </div>
+            <span style="font-size:0.88rem; font-weight:600;">${item.text}</span>
+          </div>
+        `;
+      }).join('');
+
+      // Update progress
+      const count = Object.values(checklistState).filter(Boolean).length;
+      document.getElementById('checklistCount').innerText = `${count} / ${CHECKLIST_ITEMS.length} Verified`;
+      const pct = (count / CHECKLIST_ITEMS.length) * 100;
+      document.getElementById('checklistBar').style.width = `${pct}%`;
+    }
+
+    function toggleChecklist(id) {
+      checklistState[id] = !checklistState[id];
+      renderChecklist();
+    }
+
+    /* ==========================================================================
+       9. COMPARISON MATRIX
+       ========================================================================== */
+    function addToComparison() {
+      if (!currentAnalysis) return;
+      if (comparisonList.length >= 3) {
+        showToast('Comparison limit reached (Max 3 products)', 'warning');
+        return;
+      }
+
+      // Check duplicate
+      if (comparisonList.some(p => p.input.title === currentAnalysis.input.title)) {
+        showToast('Product already in comparison list');
+        return;
+      }
+
+      comparisonList.push(currentAnalysis);
+      renderComparisonTable();
+      switchTab('compare');
+      showToast('Product added to comparison matrix!');
+    }
+
+    function renderComparisonTable() {
+      const container = document.getElementById('compareContent');
+      if (!container) return;
+
+      if (comparisonList.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:3rem 1rem; color:var(--text-muted);">
+            <i class="fa-solid fa-code-compare" style="font-size:3rem; color:var(--text-dim); margin-bottom:1rem;"></i>
+            <h3>No Products in Comparison Matrix</h3>
+            <p style="font-size:0.88rem; margin-top:0.4rem;">Run product inspections and click "Compare" to evaluate up to 3 listings side-by-side.</p>
+            <button class="btn-primary" style="margin-top:1.5rem;" onclick="loadDemoPreset(1); addToComparison(); loadDemoPreset(2); addToComparison();">
+              <i class="fa-solid fa-flask"></i> Load Demo Comparison
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      // Find lowest risk (winner)
+      let minScore = Math.min(...comparisonList.map(c => c.score));
+
+      let tableHtml = `
+        <div class="table-wrapper">
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th>Parameters</th>
+                ${comparisonList.map((item, idx) => `
+                  <th class="${item.score === minScore ? 'winner-col' : ''}">
+                    Product ${String.fromCharCode(65 + idx)} ${item.score === minScore ? '👑 (Safest Choice)' : ''}
+                    <div style="font-weight:400; font-size:0.8rem; color:var(--text-muted); margin-top:4px;">${item.input.title}</div>
+                  </th>
+                `).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Selling Price</strong></td>
+                ${comparisonList.map(item => `<td>₹${item.input.price}</td>`).join('')}
+              </tr>
+              <tr>
+                <td><strong>Original MRP</strong></td>
+                ${comparisonList.map(item => `<td>${item.input.mrp ? '₹' + item.input.mrp : 'N/A'}</td>`).join('')}
+              </tr>
+              <tr>
+                <td><strong>Seller Name</strong></td>
+                ${comparisonList.map(item => `<td>${item.input.seller || 'N/A'}</td>`).join('')}
+              </tr>
+              <tr>
+                <td><strong>Seller Rating</strong></td>
+                ${comparisonList.map(item => `<td>★ ${item.input.sellerRating || 'N/A'}</td>`).join('')}
+              </tr>
+              <tr>
+                <td><strong>Return Policy</strong></td>
+                ${comparisonList.map(item => `<td>${item.input.returnPolicy === 'yes' ? '✅ Available' : '⚠️ No Returns'}</td>`).join('')}
+              </tr>
+              <tr>
+                <td><strong>Warranty</strong></td>
+                ${comparisonList.map(item => `<td>${item.input.warranty === 'yes' ? '✅ Included' : '⚠️ None'}</td>`).join('')}
+              </tr>
+              <tr>
+                <td><strong>Composite Risk Score</strong></td>
+                ${comparisonList.map(item => `
+                  <td>
+                    <span class="risk-badge ${item.score >= 50 ? 'vhigh' : (item.score >= 25 ? 'moderate' : 'low')}" style="font-size:0.75rem; padding:2px 8px;">
+                      ${item.score} / 100
+                    </span>
+                  </td>
+                `).join('')}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      container.innerHTML = tableHtml;
+    }
+
+    function clearComparison() {
+      comparisonList = [];
+      renderComparisonTable();
+      showToast('Comparison matrix cleared');
+    }
+
+    /* ==========================================================================
+       10. UTILITIES & EXPORT
+       ========================================================================== */
+    function copyAnalysisSummary() {
+      if (!currentAnalysis) return;
+      const text = `[FakeBazaar AI Risk Assessment Report]
+Product: ${currentAnalysis.input.title}
+Risk Score: ${currentAnalysis.score}/100 (${currentAnalysis.score >= 50 ? 'HIGH RISK' : 'LOW/MODERATE RISK'})
+Selling Price: ₹${currentAnalysis.input.price}
+Seller: ${currentAnalysis.input.seller}
+Primary Flags Identified: ${currentAnalysis.signals.length} signals evaluated.
+Inspected via FakeBazaar AI Detector.`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Analysis summary copied to clipboard!');
+      });
+    }
+  </script>
+</body>
+</html>
