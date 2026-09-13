@@ -259,8 +259,7 @@
       border-color: rgba(0, 0, 0, 0.12);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
     }
-    body.light-mode .dash-url-input-group input,
-    body.light-mode .photo-dropzone {
+    body.light-mode .dash-url-input-group input {
       background: #f8fafc;
       color: #0f172a;
       border-color: rgba(0, 0, 0, 0.15);
@@ -631,70 +630,7 @@
       border-bottom: 1px solid var(--border-color);
     }
 
-    /* Photo / Image Scanner Styles */
-    .photo-dropzone {
-      border: 2px dashed rgba(0, 242, 254, 0.4);
-      background: rgba(10, 14, 23, 0.6);
-      border-radius: var(--radius-md);
-      padding: 1.8rem;
-      text-align: center;
-      cursor: pointer;
-      transition: var(--transition);
-      position: relative;
-    }
-    .photo-dropzone:hover, .photo-dropzone.dragover {
-      border-color: var(--accent-cyan);
-      background: rgba(0, 242, 254, 0.08);
-      box-shadow: 0 0 20px rgba(0, 242, 254, 0.15);
-    }
-    .photo-preview-container {
-      display: none;
-      position: relative;
-      border-radius: var(--radius-md);
-      overflow: hidden;
-      border: 1px solid var(--border-highlight);
-      max-height: 280px;
-      margin-bottom: 1.25rem;
-      background: #000;
-    }
-    .photo-preview-img {
-      width: 100%;
-      height: 280px;
-      object-fit: contain;
-      display: block;
-    }
-    .scan-laser-line {
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, transparent, var(--accent-cyan), #ffffff, var(--accent-cyan), transparent);
-      box-shadow: 0 0 15px var(--accent-cyan);
-      display: none;
-      animation: laserSweep 1.8s ease-in-out infinite alternate;
-      z-index: 10;
-    }
-    @keyframes laserSweep {
-      0% { top: 0%; }
-      100% { top: 96%; }
-    }
-    .ocr-tags-wrapper {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-top: 0.75rem;
-    }
-    .ocr-tag {
-      font-size: 0.76rem;
-      padding: 4px 10px;
-      border-radius: 50px;
-      background: rgba(0, 242, 254, 0.12);
-      border: 1px solid rgba(0, 242, 254, 0.3);
-      color: var(--accent-cyan);
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-weight: 600;
-    }
+
 
     /* Dashboard Grid */
     .stats-grid {
@@ -1443,9 +1379,7 @@
             <button class="btn-primary" onclick="switchTab('analyze')">
               <i class="fa-solid fa-magnifying-glass-chart"></i> Analyze a Product
             </button>
-            <button class="btn-primary" style="background:linear-gradient(135deg, var(--accent-purple), var(--accent-blue)); box-shadow:0 0 20px rgba(139, 92, 246, 0.4);" onclick="triggerDashPhotoScanTab()">
-              <i class="fa-solid fa-camera"></i> Scan Product by Photo
-            </button>
+
             <button class="btn-secondary" onclick="loadDemoPreset(1)">
               <i class="fa-solid fa-flask"></i> Try High Risk Demo
             </button>
@@ -1519,9 +1453,7 @@
           <button class="dash-tab-btn" id="dashTabExpress" onclick="switchDashScanMode('express')">
             <i class="fa-solid fa-sliders"></i> Express Parameters Scan
           </button>
-          <button class="dash-tab-btn" id="dashTabPhoto" onclick="switchDashScanMode('photo')">
-            <i class="fa-solid fa-camera-retro"></i> Photo / Image AI Scan
-          </button>
+
         </div>
 
         <!-- Mode A: URL Quick Scan Form -->
@@ -1567,43 +1499,7 @@
           </div>
         </form>
 
-        <!-- Mode C: Photo / Image Scanner Form (Initially hidden) -->
-        <form id="dashPhotoForm" style="display:none;" onsubmit="handleDashPhotoScanSubmit(event)">
-          <div class="photo-preview-container" id="photoPreviewBox">
-            <div class="scan-laser-line" id="photoLaserLine"></div>
-            <img id="photoPreviewImg" class="photo-preview-img" src="" alt="Scan Target Preview">
-          </div>
 
-          <div class="photo-dropzone" id="photoDropzone" onclick="document.getElementById('dashInputPhoto').click()">
-            <i class="fa-solid fa-cloud-arrow-up" style="font-size:2.2rem; color:var(--accent-cyan); margin-bottom:0.6rem;"></i>
-            <h4 style="font-size:1.05rem; font-weight:700; margin-bottom:0.2rem;">Drop Product Photo, Packaging Label or Invoice Here</h4>
-            <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.8rem;">Supports PNG, JPG, WEBP • Max 10MB • Live Camera Capture • Automatic OCR & Visual Threat Signal Extraction</p>
-            
-            <div style="display:flex; justify-content:center; gap:0.6rem; flex-wrap:wrap; margin-top:0.6rem;">
-              <button type="button" class="btn-primary" style="font-size:0.82rem; padding:0.4rem 0.9rem;" onclick="event.stopPropagation(); openLiveCameraScanner()">
-                <i class="fa-solid fa-video"></i> Snap Live Camera Photo
-              </button>
-              <span class="btn-preset" onclick="event.stopPropagation(); runPhotoPreset(1)"><i class="fa-solid fa-skull"></i> Sample Fake Packaging</span>
-              <span class="btn-preset" onclick="event.stopPropagation(); runPhotoPreset(2)"><i class="fa-solid fa-shield-heart"></i> Sample Genuine Box</span>
-              <span class="btn-preset" onclick="event.stopPropagation(); runPhotoPreset(3)"><i class="fa-solid fa-receipt"></i> Sample Fraud Receipt</span>
-            </div>
-            
-            <input type="file" id="dashInputPhoto" accept="image/*" style="display:none;" onchange="handlePhotoSelect(event)">
-          </div>
-
-          <div id="ocrTagsContainer" class="ocr-tags-wrapper" style="display:none;">
-            <!-- Dynamic OCR tags -->
-          </div>
-
-          <div style="display:flex; gap:1rem; margin-top:1.25rem;">
-            <button type="submit" id="btnRunPhotoScan" class="btn-primary" style="font-size:0.9rem;" disabled>
-              <i class="fa-solid fa-eye"></i> Analyze Image & Detect Threats
-            </button>
-            <button type="button" class="btn-secondary" onclick="resetDashPhotoScan()" style="font-size:0.9rem;">
-              <i class="fa-solid fa-rotate-left"></i> Reset Image
-            </button>
-          </div>
-        </form>
 
         <!-- Live Scan Result Card on Dashboard -->
         <div id="dashResultContainer" class="dash-result-card">
@@ -2188,28 +2084,7 @@
     </div>
   </div>
 
-  <!-- LIVE CAMERA SNAPSHOT MODAL -->
-  <div class="modal-overlay" id="cameraModal">
-    <div class="modal-card" style="max-width:540px; text-align:center;">
-      <button class="modal-close" onclick="closeLiveCameraScanner()">&times;</button>
-      <h3 style="font-size:1.25rem; margin-bottom:0.4rem; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
-        <i class="fa-solid fa-camera" style="color:var(--accent-cyan);"></i> Live Camera Product Scanner
-      </h3>
-      <p style="color:var(--text-muted); font-size:0.82rem; margin-bottom:1rem;">Align product package, brand logo, or price tag inside the viewport frame</p>
-      
-      <div style="position:relative; width:100%; height:280px; background:#000; border-radius:var(--radius-md); overflow:hidden; border:2px solid var(--accent-cyan);">
-        <video id="cameraVideo" autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>
-        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:70%; height:60%; border:2px dashed var(--accent-cyan); border-radius:12px; pointer-events:none; box-shadow:0 0 0 9999px rgba(0,0,0,0.5);"></div>
-      </div>
-      
-      <canvas id="cameraCanvas" style="display:none;"></canvas>
 
-      <div style="margin-top:1.25rem; display:flex; justify-content:center; gap:1rem;">
-        <button class="btn-primary" onclick="captureLivePhoto()"><i class="fa-solid fa-circle-dot"></i> Capture Photo</button>
-        <button class="btn-secondary" onclick="closeLiveCameraScanner()">Cancel</button>
-      </div>
-    </div>
-  </div>
 
   <!-- TOAST CONTAINER -->
   <div class="toast-container" id="toastContainer"></div>
@@ -2449,17 +2324,13 @@
     function switchDashScanMode(mode) {
       const urlTab = document.getElementById('dashTabUrl');
       const expressTab = document.getElementById('dashTabExpress');
-      const photoTab = document.getElementById('dashTabPhoto');
       const urlForm = document.getElementById('dashUrlForm');
       const expressForm = document.getElementById('dashExpressForm');
-      const photoForm = document.getElementById('dashPhotoForm');
 
       urlTab.classList.remove('active');
       expressTab.classList.remove('active');
-      photoTab.classList.remove('active');
       urlForm.style.display = 'none';
       expressForm.style.display = 'none';
-      photoForm.style.display = 'none';
 
       if (mode === 'url') {
         urlTab.classList.add('active');
@@ -2467,227 +2338,7 @@
       } else if (mode === 'express') {
         expressTab.classList.add('active');
         expressForm.style.display = 'block';
-      } else if (mode === 'photo') {
-        photoTab.classList.add('active');
-        photoForm.style.display = 'block';
       }
-    }
-
-    const PHOTO_PRESETS = {
-      1: {
-        name: "Fake Box Packaging (Fake Phone)",
-        img: "https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=600&auto=format&fit=crop&q=80",
-        ocrText: ["Text OCR: 'SUPER PRO PHONE 8K'", "Price Tag: '₹4,999' (Font Anomaly)", "Logo Alignment: 42% Match", "Missing BIS & CE Safety Seals"],
-        inputData: {
-          url: "https://photo-scan.local/fake-box-photo.jpg",
-          title: "Scanned Photo: Counterfeit Phone Packaging",
-          price: 4999,
-          mrp: 49999,
-          seller: "Photo OCR Unverified Merchant",
-          sellerRating: 1.5,
-          sellerReviews: 2,
-          productRating: 1.0,
-          productReviews: 1,
-          returnPolicy: 'no',
-          warranty: 'no',
-          contact: 'no',
-          description: "Photo Scan analysis of product box. OCR extracted manipulated price tag '₹4,999' and identified missing manufacturer holograms."
-        }
-      },
-      2: {
-        name: "Genuine Box Packaging (Sony XM5)",
-        img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80",
-        ocrText: ["Text OCR: 'Sony WH-1000XM5'", "Official Hologram: Verified ✅", "Serial Barcode: Valid Database Match ✅", "BIS Seal: Registration #R-41009821"],
-        inputData: {
-          url: "https://photo-scan.local/genuine-headphone.jpg",
-          title: "Scanned Photo: Sony WH-1000XM5 Package",
-          price: 24990,
-          mrp: 29990,
-          seller: "Official Sony Retail Store",
-          sellerRating: 4.8,
-          sellerReviews: 1200,
-          productRating: 4.7,
-          productReviews: 950,
-          returnPolicy: 'yes',
-          warranty: 'yes',
-          contact: 'yes',
-          description: "Photo Scan analysis of product box. Genuine barcode signature verified against official serial database."
-        }
-      },
-      3: {
-        name: "Fraudulent Receipt Photo",
-        img: "https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?w=600&auto=format&fit=crop&q=80",
-        ocrText: ["Text OCR: 'CASH ONLY INVOICE'", "Payment Type: Off-Platform Wire", "GST Registration: Invalid Format", "No Refund Disclaimer Highlighted"],
-        inputData: {
-          url: "https://photo-scan.local/fraud-receipt.jpg",
-          title: "Scanned Document: Offline Unofficial Cash Receipt",
-          price: 9999,
-          mrp: 79999,
-          seller: "Unregistered Cash Trader",
-          sellerRating: 2.0,
-          sellerReviews: 3,
-          productRating: 2.0,
-          productReviews: 2,
-          returnPolicy: 'no',
-          warranty: 'no',
-          contact: 'no',
-          description: "Photo Scan of payment receipt. OCR detected illegal 'NO REFUND / CASH ONLY' terms and unregistered GSTIN."
-        }
-      }
-    };
-
-    let currentSelectedPhotoData = null;
-
-    function handlePhotoSelect(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const dataUrl = event.target.result;
-        displayPhotoPreview(dataUrl, [
-          "Image File Loaded",
-          `File: ${file.name}`,
-          "OCR Engine Standing By",
-          "Visual Signature Scanner Ready"
-        ]);
-
-        currentSelectedPhotoData = {
-          url: dataUrl,
-          title: `User Photo Scan (${file.name})`,
-          price: 1999,
-          mrp: 14999,
-          seller: "Photo OCR Merchant",
-          sellerRating: 2.2,
-          sellerReviews: 6,
-          productRating: 3.0,
-          productReviews: 4,
-          returnPolicy: 'no',
-          warranty: 'no',
-          contact: 'no',
-          description: `Uploaded user photo scan (${file.name}). Extracted OCR text and visual packaging signals.`
-        };
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function runPhotoPreset(presetId) {
-      const preset = PHOTO_PRESETS[presetId];
-      if (!preset) return;
-
-      displayPhotoPreview(preset.img, preset.ocrText);
-      currentSelectedPhotoData = preset.inputData;
-    }
-
-    function displayPhotoPreview(imgSrc, ocrTags) {
-      const previewBox = document.getElementById('photoPreviewBox');
-      const previewImg = document.getElementById('photoPreviewImg');
-      const tagsContainer = document.getElementById('ocrTagsContainer');
-      const btnRun = document.getElementById('btnRunPhotoScan');
-
-      previewImg.src = imgSrc;
-      previewBox.style.display = 'block';
-      btnRun.disabled = false;
-
-      tagsContainer.innerHTML = ocrTags.map(tag => `<span class="ocr-tag"><i class="fa-solid fa-microchip"></i> ${tag}</span>`).join('');
-      tagsContainer.style.display = 'flex';
-    }
-
-    function handleDashPhotoScanSubmit(e) {
-      e.preventDefault();
-      if (!currentSelectedPhotoData) return;
-
-      const laser = document.getElementById('photoLaserLine');
-      laser.style.display = 'block';
-
-      executeDashScan(currentSelectedPhotoData);
-
-      setTimeout(() => {
-        laser.style.display = 'none';
-      }, 1200);
-    }
-
-    function resetDashPhotoScan() {
-      document.getElementById('photoPreviewBox').style.display = 'none';
-      document.getElementById('ocrTagsContainer').style.display = 'none';
-      document.getElementById('photoPreviewImg').src = '';
-      document.getElementById('dashInputPhoto').value = '';
-      document.getElementById('btnRunPhotoScan').disabled = true;
-      currentSelectedPhotoData = null;
-    }
-
-    function openLiveCameraScanner() {
-      const modal = document.getElementById('cameraModal');
-      const video = document.getElementById('cameraVideo');
-      modal.classList.add('active');
-
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-          .then(stream => {
-            video.srcObject = stream;
-          })
-          .catch(err => {
-            showToast('Camera access unavailable. Using simulated photo mode.', 'warning');
-            closeLiveCameraScanner();
-            runPhotoPreset(1);
-          });
-      } else {
-        showToast('Camera not supported by browser. Using sample photo.', 'warning');
-        closeLiveCameraScanner();
-        runPhotoPreset(1);
-      }
-    }
-
-    function closeLiveCameraScanner() {
-      const modal = document.getElementById('cameraModal');
-      const video = document.getElementById('cameraVideo');
-      if (video.srcObject) {
-        video.srcObject.getTracks().forEach(track => track.stop());
-      }
-      modal.classList.remove('active');
-    }
-
-    function captureLivePhoto() {
-      const video = document.getElementById('cameraVideo');
-      const canvas = document.getElementById('cameraCanvas');
-      canvas.width = video.videoWidth || 640;
-      canvas.height = video.videoHeight || 480;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      const dataUrl = canvas.toDataURL('image/jpeg');
-      closeLiveCameraScanner();
-
-      displayPhotoPreview(dataUrl, [
-        "Live Camera Snapshot",
-        "Resolution: " + canvas.width + "x" + canvas.height,
-        "OCR Text Extraction: Active",
-        "Brand & Price Recognition: Complete"
-      ]);
-
-      currentSelectedPhotoData = {
-        url: dataUrl,
-        title: "Live Camera Scanned Product",
-        price: 3499,
-        mrp: 29999,
-        seller: "Camera Recognized Merchant",
-        sellerRating: 1.9,
-        sellerReviews: 3,
-        productRating: 2.0,
-        productReviews: 2,
-        returnPolicy: 'no',
-        warranty: 'no',
-        contact: 'no',
-        description: "Live camera scan of physical product. Extracted price tag '₹3,499' and identified missing authentic brand holograms."
-      };
-
-      showToast('Photo captured! Click "Analyze Image & Detect Threats" below.');
-    }
-
-    function triggerDashPhotoScanTab() {
-      switchTab('dashboard');
-      switchDashScanMode('photo');
-      document.getElementById('dashPhotoForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     function handleDashUrlScan(e) {
